@@ -15,6 +15,7 @@ transporter.py
 /config/www/
 /www/
 /.ssh/
+/config/.ssh/
 /config/tts/
 /config/deps/
 /config/hadashboards/
