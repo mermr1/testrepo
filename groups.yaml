@@ -1,0 +1,28 @@
+# Family Group
+family_everyone:
+  name: Family_Everyone
+  all: true
+  entities:
+    - person.mark
+    - person.holly
+
+family_anyone:
+  name: Family_Anyone
+  all: false
+  entities:
+    - person.holly
+    - person.mark
+
+###list of echo devices
+echos:
+  name: All Echos
+  entities:
+    - media_player.basement_echo
+    - media_player.family_echo
+    - media_player.garage_echo
+    - media_player.guest_echo
+    - media_player.kitchen_echo
+    - media_player.laundry_echo
+    - media_player.living_room_echo
+    - media_player.master_echo
+    - media_player.portable_echo

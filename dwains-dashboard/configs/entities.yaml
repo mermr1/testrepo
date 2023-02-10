@@ -1,0 +1,15 @@
+person.mqtt_user:
+  hidden: true
+camera.front_door_bell:
+  hidden: false
+  excluded: false
+  disabled: false
+  friendly_name: ''
+  col_span: '2'
+  row_span: '2'
+  col_span_lg: '2'
+  row_span_lg: '2'
+  col_span_xl: '2'
+  row_span_xl: '2'
+  custom_card: false
+  custom_popup: true

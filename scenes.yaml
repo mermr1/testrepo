@@ -1,0 +1,84 @@
+- id: '1674396104731'
+  name: Basement Office
+  entities:
+    switch.basement_counter_plug:
+      device_class: outlet
+      friendly_name: Basement Counter Plug
+      state: 'off'
+    switch.basement_sink_switch:
+      icon: mdi:light-switch
+      friendly_name: Basement Sink Switch
+      state: 'off'
+    light.basement:
+      supported_color_modes:
+      - brightness
+      color_mode: brightness
+      brightness: 255
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - bobulb1
+      - bobulb3
+      - bobulb2
+      dynamics: false
+      icon: mdi:ceiling-light
+      friendly_name: Basement
+      supported_features: 40
+      state: 'on'
+    switch.wall_left_plug:
+      device_class: outlet
+      icon: mdi:power-plug
+      friendly_name: Wall Left Plug
+      state: 'off'
+    light.wiz_bulb:
+      min_color_temp_kelvin: 2202
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 454
+      effect_list:
+      - Ocean
+      - Romance
+      - Sunset
+      - Party
+      - Fireplace
+      - Cozy
+      - Forest
+      - Pastel Colors
+      - Wake up
+      - Bedtime
+      - Warm White
+      - Daylight
+      - Cool white
+      - Night light
+      - Focus
+      - Relax
+      - True colors
+      - TV time
+      - Plantgrowth
+      - Spring
+      - Summer
+      - Fall
+      - Deepdive
+      - Jungle
+      - Mojito
+      - Club
+      - Christmas
+      - Halloween
+      - Candlelight
+      - Golden white
+      - Pulse
+      - Steampunk
+      - Rhythm
+      supported_color_modes:
+      - color_temp
+      - rgbw
+      friendly_name: wiz bulb
+      supported_features: 4
+      state: 'off'
+    switch.wall_right_plug:
+      device_class: outlet
+      friendly_name: Wall Right Plug
+      state: 'off'
+  icon: mdi:microsoft-office
+  metadata: {}

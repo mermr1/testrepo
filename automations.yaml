@@ -1,0 +1,2007 @@
+- id: '1674240649029'
+  alias: Basement Lights
+  description: turn on/off basement lights with switch
+  trigger:
+  - platform: state
+    entity_id:
+    - light.basement
+    to: 'on'
+    id: light on
+  - platform: state
+    entity_id:
+    - light.basement
+    to: 'off'
+    id: light off
+  - platform: device
+    type: turned_on
+    device_id: fd515ee5e864610ab62aab906ba2f821
+    entity_id: switch.basement_sink_switch
+    domain: switch
+    id: sink on
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
+  - platform: device
+    type: turned_off
+    device_id: fd515ee5e864610ab62aab906ba2f821
+    entity_id: switch.basement_sink_switch
+    domain: switch
+    id: sink off
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: light on
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id:
+          - switch.basement_sink_switch
+          - switch.wall_left_plug
+          - switch.wall_right_plug
+      - type: turn_on
+        device_id: fff1787a9e7a855b257b1b8cece4c160
+        entity_id: remote.32_tcl_roku_tv
+        domain: remote
+    - conditions:
+      - condition: trigger
+        id: light off
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id:
+          - switch.basement_sink_switch
+          - switch.wall_left_plug
+          - switch.wall_right_plug
+          - switch.basement_coffee_plug
+      - type: turn_off
+        device_id: fff1787a9e7a855b257b1b8cece4c160
+        entity_id: remote.32_tcl_roku_tv
+        domain: remote
+    - conditions:
+      - condition: trigger
+        id: sink on
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.basement_counter_plug
+      - type: turn_on
+        device_id: 10c71e3ee15286cea9b7c021a68db7bf
+        entity_id: light.wiz_bulb
+        domain: light
+    - conditions:
+      - condition: trigger
+        id: sink off
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.basement_counter_plug
+      - type: turn_off
+        device_id: 10c71e3ee15286cea9b7c021a68db7bf
+        entity_id: light.wiz_bulb
+        domain: light
+  mode: single
+- id: '1674396254958'
+  alias: Basement Office
+  description: Set Basement up for office work
+  trigger:
+  - platform: tag
+    tag_id: basement_office_tag
+  condition: []
+  action:
+  - service: scene.turn_on
+    target:
+      entity_id: scene.basement_office
+    metadata: {}
+  mode: single
+- id: '1674416761212'
+  alias: Backup Failure Notification
+  description: send persistant notification if google backups not working.
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.backups_stale
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: notify.persistent_notification
+    data:
+      message: Problems with backups to google!!!
+      title: Please Help Me
+  mode: single
+- id: '1674496545452'
+  alias: Vaporizer Schedule
+  description: Turn vaporizers on or off according to time and humidity
+  trigger:
+  - platform: time
+    at: 00:00:00
+    id: turn on
+  - platform: time
+    at: 04:00:00
+    id: turn off
+  - platform: time
+    at: 08:00:00
+    id: turn on
+  - platform: time
+    at: '12:00:00'
+    id: turn off
+  - platform: time
+    at: '16:00:00'
+    id: turn on
+  - platform: time
+    at: '20:00:00'
+    id: turn off
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: turn on
+      sequence:
+      - service: script.green_vaporizor
+        data: {}
+      - service: script.yellow_vaporizor
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: turn off
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id:
+          - switch.green_plug
+          - switch.yellow_plug
+  mode: single
+- id: '1674568559701'
+  alias: Upstairs Space Heater
+  description: Turn on space heater is temperature low and house occupied
+  trigger:
+  - platform: time
+    at: '19:00:00'
+  condition:
+  - condition: and
+    conditions:
+    - condition: numeric_state
+      entity_id: weather.forecast_home
+      attribute: temperature
+      below: 65
+    - condition: state
+      entity_id: group.family_anyone
+      state: home
+  action:
+  - service: remote.send_command
+    data:
+      device: Upstairs Heater
+      command: power
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - service: remote.send_command
+    data:
+      device: Upstairs Heater
+      command: timer
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+- id: '1674670061254'
+  alias: Coffee Button Press
+  description: turn coffee off and set coffee ready button for both basement and upstairs
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.basement_coffee_button
+    id: basement
+  - platform: state
+    entity_id:
+    - input_boolean.upstairs_coffee_button
+    id: upstairs
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: basement
+      sequence:
+      - if:
+        - condition: state
+          entity_id: switch.basement_coffee_plug
+          state: 'off'
+        then:
+        - if:
+          - condition: state
+            entity_id: input_boolean.basement_coffee_ready
+            state: 'on'
+          then:
+          - service: notify.alexa_media_basement_echo
+            data:
+              message: You Already Pressed the Button
+              data:
+                type: tts
+          else:
+          - service: input_boolean.turn_on
+            data: {}
+            target:
+              entity_id: input_boolean.basement_coffee_ready
+          - service: notify.alexa_media_basement_echo
+            data:
+              message: Coffee Pot is ready to brew coffee
+              data:
+                type: tts
+        else:
+        - service: switch.turn_off
+          data: {}
+          target:
+            entity_id: switch.basement_coffee_plug
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.basement_coffee_ready
+        - service: script.moon_lamp_off
+          data: {}
+    - conditions:
+      - condition: trigger
+        id: upstairs
+      sequence:
+      - if:
+        - condition: state
+          entity_id: switch.upstairs_coffee_plug
+          state: 'off'
+        then:
+        - if:
+          - condition: state
+            entity_id: input_boolean.upstairs_coffee_ready
+            state: 'on'
+          then:
+          - service: notify.alexa_media_master_echo
+            data:
+              message: You Already Pushed the Button!
+              data:
+                type: tts
+          else:
+          - service: input_boolean.turn_on
+            data: {}
+            target:
+              entity_id: input_boolean.upstairs_coffee_ready
+          - service: notify.alexa_media_master_echo
+            data:
+              message: Coffee Pot Ready to brew Coffee!
+              data:
+                type: tts
+        else:
+        - service: switch.turn_off
+          data: {}
+          target:
+            entity_id: switch.upstairs_coffee_plug
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.upstairs_coffee_ready
+        - service: script.moon_lamp_off
+          data: {}
+  mode: single
+- id: '1674734486138'
+  alias: Master Bathroom Light
+  description: adjust master bathroom lights according to day or night
+  trigger:
+  - platform: state
+    entity_id:
+    - light.master_bathroom
+    to: 'on'
+  condition: []
+  action:
+  - if:
+    - condition: time
+      before: '20:00:00'
+      after: 04:00:00
+      weekday:
+      - sat
+      - fri
+      - thu
+      - wed
+      - tue
+      - mon
+      - sun
+    then:
+    - if:
+      - condition: numeric_state
+        entity_id: light.master_bathroom
+        attribute: brightness
+        below: 255
+      then:
+      - service: light.turn_on
+        data:
+          brightness: 255
+          transition: 30
+        target:
+          entity_id: light.master_bathroom
+    else:
+    - service: light.turn_on
+      data:
+        brightness: 65
+      target:
+        entity_id: light.master_bathroom
+  mode: single
+- id: '1648230313760'
+  alias: Bed Sensors
+  description: turn on and off bed sensors with webhook from ifttt
+  trigger:
+  - platform: webhook
+    webhook_id: bed_sensor_mark_off
+    id: mark off
+  - platform: webhook
+    webhook_id: bed_sensor_mark_on
+    id: mark on
+  - platform: webhook
+    webhook_id: bed_sensor_holly_off
+    id: holly off
+  - platform: webhook
+    id: holly on
+    webhook_id: bed_sensor_holly_on
+  - platform: state
+    entity_id:
+    - binary_sensor.withings_in_bed_holly
+    to: 'on'
+    id: holly on
+  - platform: state
+    entity_id:
+    - binary_sensor.withings_in_bed_holly
+    from: 'on'
+    id: holly off
+  - platform: state
+    entity_id:
+    - binary_sensor.withings_in_bed_mark
+    to: 'on'
+    id: mark on
+  - platform: state
+    entity_id:
+    - binary_sensor.withings_in_bed_mark
+    from: 'on'
+    id: mark off
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: mark off
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.bed_mark
+    - conditions:
+      - condition: trigger
+        id: mark on
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.bed_mark
+    - conditions:
+      - condition: trigger
+        id: holly off
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.bed_holly
+    - conditions:
+      - condition: trigger
+        id: holly on
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.bed_holly
+  mode: single
+- id: '1674737248398'
+  alias: Upstairs Sweeper
+  description: turn lights on and off for rosie sweeping upstairs
+  trigger:
+  - platform: device
+    device_id: 201708e6b1aa1b169ee029b27b706945
+    domain: vacuum
+    entity_id: vacuum.rosie
+    type: docked
+    id: docked
+  - platform: state
+    entity_id:
+    - vacuum.rosie
+    from: docked
+    id: sweeping
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: upstairs_light_check
+      event_response_type: ResponseYes
+    id: light yes
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: upstairs_light_check
+      event_response_type: ResponseNone
+    id: light none
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: docked
+      sequence:
+      - service: script.activate_alexa_actionable_notification
+        data:
+          text: Is there anyone up here?
+          event_id: upstairs_light_check
+          alexa_device: media_player.master_echo
+    - conditions:
+      - condition: trigger
+        id: sweeping
+      sequence:
+      - service: light.turn_on
+        data: {}
+        target:
+          entity_id:
+          - light.master_bathroom
+          - light.master_fan
+          - light.holly_lamp
+          - light.coffee_light
+          - light.upstairs_office
+    - conditions:
+      - condition: trigger
+        id: light yes
+      sequence:
+      - service: notify.alexa_media_master_echo
+        data:
+          message: O.K., then I will not turn off the lights.
+          data:
+            type: tts
+    - conditions:
+      - condition: trigger
+        id: light none
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id:
+          - light.upstairs_office
+          - light.coffee_light
+          - light.holly_lamp
+          - light.master_fan
+          - light.master_bathroom
+  mode: single
+- id: '1674762589678'
+  alias: Coffee Announcement
+  description: ask if i want coffee to brew
+  trigger:
+  - platform: state
+    entity_id:
+    - light.basement
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
+    id: basement coffee
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: basement_coffee_event
+      event_response_type: ResponseYes
+    id: basement yes
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: basement_coffee_event
+      event_response_type: ResponseNo
+    id: Basement no
+  - platform: state
+    entity_id:
+    - light.coffee_light
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
+    id: upstairs coffee
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: upstairs_coffee_event
+      event_response_type: ResponseYes
+    id: upstairs yes
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: upstairs_coffee_event
+      event_response_type: ResponseNo
+    id: upstairs no
+  - platform: time
+    at: 00:00:00
+    id: reset
+  - platform: state
+    entity_id:
+    - input_boolean.bed_mark
+    to: 'off'
+    id: upstairs coffee
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: basement coffee
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.basement_coffee_ready
+          state: 'on'
+        then:
+        - service: script.activate_alexa_actionable_notification
+          data:
+            text: Would you like me to start the coffee?
+            event_id: basement_coffee_event
+            alexa_device: media_player.basement_echo
+        else:
+        - service: notify.alexa_media
+          data:
+            message: If you want coffee, you will need to brew it yourself!
+            target:
+            - media_player.basement_echo
+            data:
+              type: tts
+    - conditions:
+      - condition: trigger
+        id: basement yes
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.basement_coffee_plug
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.basement_coffee_ready
+      - service: notify.alexa_media
+        data:
+          message: Coffee should be ready in a few minutes.  Remeber, Good to the
+            last drop!
+          target:
+          - media_player.basement_echo
+          data:
+            type: tts
+    - conditions:
+      - condition: trigger
+        id: Basement no
+      sequence:
+      - service: notify.alexa_media
+        data:
+          message: NO coffee for you
+          target:
+          - media_player.basement_echo
+          data:
+            type: tts
+    - conditions:
+      - condition: trigger
+        id: upstairs coffee
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: input_boolean.coffee_ran
+          state: 'off'
+        - condition: time
+          after: 04:00:00
+          weekday:
+          - sun
+          - mon
+          - tue
+          - wed
+          - thu
+          - fri
+          - sat
+          before: '10:00:00'
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.upstairs_coffee_ready
+          state: 'on'
+        then:
+        - service: script.activate_alexa_actionable_notification
+          data:
+            text: Would you like me to start the coffee?
+            event_id: upstairs_coffee_event
+            alexa_device: media_player.master_echo
+        else:
+        - service: notify.alexa_media
+          data:
+            message: If you want coffee, you will need to brew it yourself!
+            target:
+            - media_player.master_echo
+            data:
+              type: tts
+    - conditions:
+      - condition: trigger
+        id: upstairs yes
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: input_boolean.coffee_ran
+          state: 'off'
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.upstairs_coffee_plug
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.upstairs_coffee_ready
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.coffee_ran
+      - service: notify.alexa_media
+        data:
+          message: Coffee should be ready in 5 minutes
+          target:
+          - media_player.master_echo
+          data:
+            type: tts
+      - delay:
+          hours: 0
+          minutes: 5
+          seconds: 0
+          milliseconds: 0
+      - service: script.moon_lamp_on
+        data: {}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 250
+      - service: script.moon_lamp_5
+        data: {}
+      - service: notify.alexa_media
+        data:
+          message: Best part of waking up is folders in your cup.  You got it coffee
+            is ready.
+          target:
+          - media_player.master_echo
+          data:
+            type: tts
+    - conditions:
+      - condition: trigger
+        id: upstairs no
+      sequence:
+      - service: notify.alexa_media
+        data:
+          message: I won't turn on the coffee.
+          target:
+          - media_player.master_echo
+          data:
+            type: tts
+    - conditions:
+      - condition: trigger
+        id: reset
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.coffee_ran
+  mode: single
+- id: '1674834057462'
+  alias: Porch Light
+  description: turn on porch light for 5 minutes of activity or door bell ring
+  trigger:
+  - type: occupied
+    platform: device
+    device_id: 0ce9b5f7ac710b9519b09723866ccaed
+    entity_id: binary_sensor.porch_door_bell_ding
+    domain: binary_sensor
+  - type: motion
+    platform: device
+    device_id: 0ce9b5f7ac710b9519b09723866ccaed
+    entity_id: binary_sensor.porch_door_bell_motion
+    domain: binary_sensor
+  condition:
+  - condition: and
+    conditions:
+    - condition: sun
+      before: sunrise
+      after: sunset
+    - condition: device
+      type: is_off
+      device_id: 5c4e0e7a5e0da916d245df19c94d1cb7
+      entity_id: switch.porch_light
+      domain: switch
+  action:
+  - type: turn_on
+    device_id: 5c4e0e7a5e0da916d245df19c94d1cb7
+    entity_id: switch.porch_light
+    domain: switch
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  - type: turn_off
+    device_id: 5c4e0e7a5e0da916d245df19c94d1cb7
+    entity_id: switch.porch_light
+    domain: switch
+  mode: single
+- id: '1674863381231'
+  alias: Medication
+  description: Medication reminders and button for Mark
+  trigger:
+  - platform: device
+    domain: mqtt
+    device_id: 3095f9764282f79dc9005d1bbea59b24
+    type: click
+    subtype: single
+    discovery_id: 0x00158d0008836ef3 click_single
+    id: morning
+  - platform: device
+    domain: mqtt
+    device_id: 3095f9764282f79dc9005d1bbea59b24
+    type: click
+    subtype: double
+    discovery_id: 0x00158d0008836ef3 click_double
+    id: evening
+  - platform: time
+    at: 00:00:00
+    id: reset
+  - platform: numeric_state
+    entity_id: sensor.medicine_button_battery
+    below: 10
+    id: battery low
+  - platform: device
+    domain: mqtt
+    device_id: 3095f9764282f79dc9005d1bbea59b24
+    type: action
+    subtype: hold
+    discovery_id: 0x00158d0008836ef3 action_hold
+    id: shot
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: morning
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.morning_pill
+    - conditions:
+      - condition: trigger
+        id: evening
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.evening_pill
+    - conditions:
+      - condition: trigger
+        id: reset
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id:
+          - input_boolean.evening_pill
+          - input_boolean.morning_pill
+          - input_boolean.morning_shot
+    - conditions:
+      - condition: trigger
+        id: battery low
+      sequence:
+      - service: notify.persistent_notification
+        data:
+          message: Medicine Button (green bathroom cabinet)
+          title: REPLACE BATTERY (1 x CR2032)
+      - service: notify.email
+        data:
+          message: Medicine Button
+          title: BATTERY CR2032
+          target:
+          - 3305243522@vtext.com
+    - conditions:
+      - condition: trigger
+        id: shot
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.morning_shot
+  mode: single
+- id: '1674908931703'
+  alias: Upstairs Staircase Motion Lights
+  description: turn lights on and off and adjust brightness accordingly
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 16448126bb7fb093b14b4ce09f5db115
+    entity_id: binary_sensor.upstairs_staircase_motion_sensor_occupancy
+    domain: binary_sensor
+    id: motion yes
+  - type: no_motion
+    platform: device
+    device_id: 16448126bb7fb093b14b4ce09f5db115
+    entity_id: binary_sensor.upstairs_staircase_motion_sensor_occupancy
+    domain: binary_sensor
+    id: motion no
+  - platform: numeric_state
+    entity_id: sensor.upstairs_staircase_motion_sensor_battery
+    below: 10
+    id: low battery
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: motion yes
+      sequence:
+      - if:
+        - condition: sun
+          before: sunset
+          after: sunrise
+        then:
+        - service: light.turn_on
+          data:
+            brightness_pct: 100
+          target:
+            entity_id: light.upstairs_office
+        else:
+        - service: light.turn_on
+          data:
+            brightness_pct: 25
+          target:
+            entity_id: light.upstairs_office
+    - conditions:
+      - condition: trigger
+        id: motion no
+      sequence:
+      - service: light.turn_off
+        data:
+          transition: 15
+        target:
+          entity_id: light.upstairs_office
+    - conditions:
+      - condition: trigger
+        id: low battery
+      sequence:
+      - service: notify.persistent_notification
+        data:
+          title: REPLACE BATTERY (1 x CR2450)
+          message: Upstairs Staircase Motion Sensor
+      - service: notify.email
+        data:
+          message: Upstairs Staircase Motion Sensor
+          title: BATTERY CR2450
+          target:
+          - 3305243522@vtext.com
+  mode: single
+- id: '1674909942174'
+  alias: Appliance Cabinet Light
+  description: Turn hall light on/off if not on when getting into cabinet
+  trigger:
+  - type: opened
+    platform: device
+    device_id: 24221612906e27383ccbec76180ba4dd
+    entity_id: binary_sensor.appliance_cabinet_door_sensor_contact
+    domain: binary_sensor
+    id: appliance open
+  - type: not_opened
+    platform: device
+    device_id: 24221612906e27383ccbec76180ba4dd
+    entity_id: binary_sensor.appliance_cabinet_door_sensor_contact
+    domain: binary_sensor
+    id: appliance closed
+  - type: bat_low
+    platform: device
+    device_id: 24221612906e27383ccbec76180ba4dd
+    entity_id: binary_sensor.appliance_cabinet_door_sensor_battery_low
+    domain: binary_sensor
+    id: low battery
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: appliance open
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 100
+        target:
+          entity_id: light.hallway
+    - conditions:
+      - condition: trigger
+        id: appliance closed
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.hallway
+    - conditions:
+      - condition: trigger
+        id: low battery
+      sequence:
+      - service: notify.persistent_notification
+        data:
+          message: Appliance Cabinet Sensor
+          title: REPLACE BATTERY (1 x CR2032)
+      - service: notify.email
+        data:
+          message: Appliance Cabinet Sensor
+          title: BATTERY CR2032
+          target:
+          - 3305243522@vtext.com
+  mode: restart
+- id: '1674951893060'
+  alias: Turn Motion Sensor On/Off
+  description: Turn upstairs motion sensor off or on at night
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.bed_holly
+    - input_boolean.bed_mark
+    to: 'on'
+    id: 'On'
+  - platform: state
+    entity_id:
+    - input_boolean.bed_holly
+    - input_boolean.bed_mark
+    to: 'off'
+    id: 'Off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'On'
+      sequence:
+      - if:
+        - condition: and
+          conditions:
+          - condition: state
+            entity_id: input_boolean.bed_holly
+            state: 'on'
+          - condition: state
+            entity_id: input_boolean.bed_mark
+            state: 'on'
+          - condition: state
+            entity_id: input_boolean.house_guest
+            state: 'off'
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: false
+          target:
+            entity_id: automation.upstairs_staircase_motion_lights
+        - service: light.turn_off
+          data: {}
+          target:
+            entity_id: light.upstairs_office
+    - conditions:
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: input_boolean.bed_holly
+          state: 'off'
+        - condition: state
+          entity_id: input_boolean.bed_mark
+          state: 'off'
+      sequence:
+      - service: automation.turn_on
+        data: {}
+        target:
+          entity_id: automation.upstairs_staircase_motion_lights
+  mode: single
+- id: '1674997041729'
+  alias: Battery Check
+  description: check batteryies in devices without HA automations
+  trigger:
+  - platform: time
+    at: 05:05:00
+  condition: []
+  action:
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.garage_motion_sensor_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Garage Motion Sensor
+        title: BATTERY REPLACE (2 x AA)
+    - service: notify.email
+      data:
+        message: Garage Motion Sensor
+        title: BATTERY 2xAA
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.breezeway_motion_sensor_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Breezeway Motion Sensor
+        title: BATTERY REPLACE (2 x AAA)
+    - service: notify.email
+      data:
+        message: Breezeway Motion Sensor
+        title: BATTERY 2xAAA
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.bstaircase_motion_sensor_d_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Basement Staircase Motion Sensor (on wall)
+        title: BATTERY REPLACE (2 x AAA)
+    - service: notify.email
+      data:
+        message: Basement Staircase Motion Sensor (on wall
+        title: BATTERY 2xAAA
+        target:
+        - 3305243533@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.bstaircase_motion_sensor_u_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Basement Staircase Motion Sensor (on ceiling)
+        title: BATTERY REPLACE (2 x AAA)
+    - service: notify.email
+      data:
+        message: Basement Staircase Motion Sensor (on ceiling)
+        title: BATTERY 2xAAA
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.basement_office_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Basement Office Switch
+        title: BATTERY REPLACE (1 x CR2032)
+    - service: notify.email
+      data:
+        message: Basement Office Switch
+        title: BATTERY CR2032
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.breezeway_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Breezeway Switch
+        title: BATTERY REPLACE (1 x CR2450)
+    - service: notify.email
+      data:
+        message: Breezeway Switch
+        title: BATTERY CR2450
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.kitchen_bw_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Kitchen Switch (by breezeway)
+        title: BATTERY REPLACE (1 x CR2032)
+    - service: notify.email
+      data:
+        message: Kitchen Switch (by breezeway)
+        title: BATTERY CR2032
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.kitchen_uc_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Kitchen Switch (by living room)
+        title: BATTERY REPLACE (1 x CR2032)
+    - service: notify.email
+      data:
+        message: Kitchen Switch (by living room)
+        title: BATTERY CR2032
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.kitchen_cabinet_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Kitchen Cabinet Switch (above dishwasher)
+        title: BATTERY REPLACE (1 x CR2450)
+    - service: notify.email
+      data:
+        message: Kitchen Cabinet Switch (above dishwasher)
+        title: BATTERY CR2450
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.living_room_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Living Room Switch
+        title: BATTERY REPLACE (1 x CR2450)
+    - service: notify.email
+      data:
+        message: Living Room Switch
+        title: BATTERY CR2450
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.guest_room_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Guest Room Switch (under lamp)
+        title: BATTERY REPLACE (1 x CR2450)
+    - service: notify.email
+      data:
+        message: Guest Room Switch
+        title: BATTERY CR2450
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.hallway_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Hallway Switch
+        title: BATTERY REPLACE (1 x CR2450)
+    - service: notify.email
+      data:
+        message: Hallway Switch
+        title: BATTERY CR2450
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.family_room_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Family Room Switch (back end table)
+        title: BATTERY REPLACE (1 x CR2450)
+    - service: notify.email
+      data:
+        message: Family Room Switch
+        title: BATTERY CR2450
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.upstairs_hw_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Upstairs Staircase Switch (by family room)
+        title: BATTERY REPLACE (1 x CR2032)
+    - service: notify.email
+      data:
+        message: Upstairs Staircase Switch (by family room)
+        title: BATTERY CR2032
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.upstairs_ms_switch_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Upstairs Staircase Switch (by master bedroom)
+        title: BATTERY REPLACE (1 x CR2032)
+    - service: notify.email
+      data:
+        message: Upstairs Staircase Switch (by guitar)
+        title: BATTERY CR2032
+        target:
+        - 3305243522@vtext.com
+  mode: single
+- id: '1675004302217'
+  alias: Basement Motion
+  description: turn basement lights on according to motion and time, also low battery
+    message
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 7a34529b2e6e14258d25a1110270df94
+    entity_id: binary_sensor.basement_motion_sensor_occupancy
+    domain: binary_sensor
+    id: motion
+  - platform: numeric_state
+    entity_id: sensor.basement_motion_sensor_battery
+    below: 10
+    id: low battery
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: motion
+      sequence:
+      - if:
+        - condition: time
+          before: '20:00:00'
+          after: 06:00:00
+          weekday:
+          - sun
+          - mon
+          - tue
+          - wed
+          - thu
+          - fri
+          - sat
+        then:
+        - service: light.turn_on
+          data:
+            brightness_pct: 100
+          target:
+            entity_id: light.basement
+    - conditions:
+      - condition: trigger
+        id: low battery
+      sequence:
+      - service: notify.persistent_notification
+        data:
+          message: Basement Motion Sensor
+          title: BATTERY REPLACE (1 x CR2450)
+      - service: notify.email
+        data:
+          message: Basement Motion Sensor
+          title: BATTERY CR2450
+          target:
+          - 3305243522@vtext.com
+  mode: single
+- id: '1675005772753'
+  alias: Medicine Reminder
+  description: remind mark to take medicine
+  trigger:
+  - platform: time
+    at: 07:00:00
+    id: morning
+  - platform: time
+    at: '19:00:00'
+    id: evening
+  - platform: time
+    at: 08:00:00
+    id: shot
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: morning
+      - condition: state
+        entity_id: input_boolean.morning_pill
+        state: 'off'
+      sequence:
+      - repeat:
+          until:
+          - condition: state
+            entity_id: input_boolean.morning_pill
+            state: 'on'
+          sequence:
+          - service: script.text_mark_medicine
+            data: {}
+    - conditions:
+      - condition: trigger
+        id: evening
+      - condition: state
+        entity_id: input_boolean.evening_pill
+        state: 'off'
+      sequence:
+      - repeat:
+          until:
+          - condition: state
+            entity_id: input_boolean.evening_pill
+            state: 'on'
+          sequence:
+          - service: script.text_mark_medicine
+            data: {}
+    - conditions:
+      - condition: trigger
+        id: shot
+      - condition: state
+        entity_id: input_boolean.morning_shot
+        state: 'off'
+      sequence:
+      - repeat:
+          while:
+          - condition: state
+            entity_id: input_boolean.morning_shot
+            state: 'off'
+          sequence:
+          - service: script.mark_shot_notification
+            data: {}
+  mode: single
+- id: '1675181240432'
+  alias: Holly Home Message
+  description: notify basement tv holly is home
+  trigger:
+  - platform: zone
+    entity_id: person.holly
+    zone: zone.geofence
+    event: enter
+  condition: []
+  action:
+  - service: notify.android_tv_fire_tv
+    data:
+      message: Holly is home!
+      title: Firestone House
+      data:
+        duration: '10'
+        fontsize: max
+        interrupt: 1
+        color: indigo
+  mode: single
+- id: '1675268056074'
+  alias: Zone Mark
+  description: run scripts when mark leaves and comes back home
+  trigger:
+  - platform: zone
+    entity_id: person.mark
+    zone: zone.geofence
+    event: enter
+    id: arrive
+  - platform: zone
+    entity_id: person.mark
+    zone: zone.home
+    event: leave
+    id: leave
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: arrive
+      sequence:
+      - service: lock.unlock
+        data: {}
+        target:
+          entity_id: lock.garage_door
+      - if:
+        - condition: state
+          entity_id: input_text.mark_driving
+          state: Blue
+        then:
+        - if:
+          - condition: state
+            entity_id: binary_sensor.blue_garage_door_sensor_contact
+            state: 'off'
+          then:
+          - service: script.blue_door
+            data: {}
+        else:
+        - if:
+          - condition: state
+            entity_id: binary_sensor.green_garage_door_sensor_contact
+            state: 'off'
+          then:
+          - service: script.green_door
+            data: {}
+      - service: automation.turn_off
+        data:
+          stop_actions: true
+        target:
+          entity_id: automation.mark_zone
+    - conditions:
+      - condition: trigger
+        id: leave
+      sequence:
+      - service: lock.lock
+        data: {}
+        target:
+          entity_id: lock.house_locks
+      - if:
+        - condition: state
+          entity_id: input_text.mark_driving
+          state: Blue
+        then:
+        - if:
+          - condition: state
+            entity_id: binary_sensor.blue_garage_door_sensor_contact
+            state: 'on'
+          then:
+          - service: script.blue_door
+            data: {}
+          else: []
+        else:
+        - if:
+          - condition: state
+            entity_id: binary_sensor.green_garage_door_sensor_contact
+            state: 'on'
+          then:
+          - service: script.green_door
+            data: {}
+  mode: single
+- id: '1675278357388'
+  alias: Low battery level check & notification
+  description: check for batteries under 10% and text mark
+  use_blueprint:
+    path: sbyx/low-battery-level-detection-notification-for-all-battery-sensors.yaml
+    input:
+      threshold: 10
+      exclude:
+        entity_id:
+        - sensor.sm_a115a_battery_level
+        - sensor.sm_g960u_battery_level
+        - sensor.sm_n960u_battery_level
+        - sensor.iphone_battery_level
+        - sensor.mark_s_ipad_battery_level
+      actions:
+      - service: notify.email
+        data:
+          target:
+          - 3305243522@vtext.com
+          message: 'message: Low battery level{{ '':'' }}{{ ''\n'' -}}{{sensors}}'
+      time: 06:00:00
+- id: '1675279703186'
+  alias: Morning Briefing Holly
+  description: Briefing Holly on mornings going to work.
+  trigger:
+  - platform: state
+    entity_id:
+    - light.breezeway
+    to: 'on'
+  condition:
+  - condition: time
+    before: 04:45:00
+    after: 04:10:00
+    weekday:
+    - sat
+    - fri
+    - thu
+    - wed
+    - tue
+    - mon
+    - sun
+  - type: is_motion
+    condition: device
+    device_id: 0febc8b3d4ac4b8ddb08bd6b0848ee73
+    entity_id: binary_sensor.breezeway_motion_sensor_motion
+    domain: binary_sensor
+  action:
+  - service: script.leaving_house_holly
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: media_player.play_media
+    data:
+      media_content_id: Alexa.Weather.Play
+      media_content_type: sequence
+    target:
+      entity_id:
+      - media_player.portable_echo
+  mode: single
+- id: '1675280095669'
+  alias: Zone Holly
+  description: run scripts when holly leaves and comes back home
+  trigger:
+  - platform: zone
+    entity_id: person.holly
+    zone: zone.geofence
+    event: enter
+    id: arrive
+  - platform: zone
+    entity_id: person.holly
+    zone: zone.home
+    event: leave
+    id: leave
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: arrive
+      sequence:
+      - service: lock.unlock
+        data: {}
+        target:
+          entity_id: lock.garage_door
+      - if:
+        - condition: state
+          entity_id: input_text.holly_driving
+          state: Blue
+        then:
+        - if:
+          - condition: state
+            entity_id: binary_sensor.blue_garage_door_sensor_contact
+            state: 'off'
+          then:
+          - service: script.blue_door
+            data: {}
+        else:
+        - if:
+          - condition: state
+            entity_id: binary_sensor.green_garage_door_sensor_contact
+            state: 'off'
+          then:
+          - service: script.green_door
+            data: {}
+      - service: automation.turn_off
+        data:
+          stop_actions: false
+        target:
+          entity_id: automation.holly_zone
+    - conditions:
+      - condition: trigger
+        id: leave
+      sequence:
+      - service: lock.lock
+        data: {}
+        target:
+          entity_id: lock.house_locks
+      - if:
+        - condition: state
+          entity_id: input_text.holly_driving
+          state: Blue
+        then:
+        - if:
+          - condition: state
+            entity_id: binary_sensor.blue_garage_door_sensor_contact
+            state: 'on'
+          then:
+          - service: script.blue_door
+            data: {}
+          else: []
+        else:
+        - if:
+          - condition: state
+            entity_id: binary_sensor.green_garage_door_sensor_contact
+            state: 'on'
+          then:
+          - service: script.green_door
+            data: {}
+  mode: single
+- id: '1672086518949'
+  alias: Tag Scanned Person
+  description: record last person to scan NFC tag
+  trigger:
+  - platform: event
+    event_type: tag_scanned
+  condition: []
+  action:
+  - service: input_text.set_value
+    data:
+      value: "{% set person = states.person|selectattr('attributes.user_id', 'eq',
+        \n  trigger.event.context.user_id)|first %}{{ person.attributes.friendly_name
+        }}"
+    target:
+      entity_id: input_text.who_is_this
+  mode: single
+- id: '1675345811153'
+  alias: Who Is Driving What Car
+  description: set input booleans for who is driving what car for garage door automation
+  trigger:
+  - platform: tag
+    tag_id: Green car
+    id: green_tag
+  - platform: tag
+    tag_id: blue car
+    id: blue_tag
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: green_tag
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 500
+      - if:
+        - condition: state
+          entity_id: input_text.who_is_this
+          state: Holly
+        then:
+        - service: input_text.set_value
+          data:
+            value: Green
+          target:
+            entity_id: input_text.holly_driving
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.holly_zone
+        else:
+        - service: input_text.set_value
+          data:
+            value: Green
+          target:
+            entity_id: input_text.mark_driving
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.mark_zone
+    - conditions:
+      - condition: trigger
+        id: blue_tag
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 500
+      - if:
+        - condition: state
+          entity_id: input_text.who_is_this
+          state: Holly
+        then:
+        - service: input_text.set_value
+          data:
+            value: Blue
+          target:
+            entity_id: input_text.holly_driving
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.holly_zone
+        else:
+        - service: input_text.set_value
+          data:
+            value: Blue
+          target:
+            entity_id: input_text.mark_driving
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.mark_zone
+  mode: single
+- id: '1675440420356'
+  alias: Zone Disabled When Home
+  description: Disable zone automations when everyone is home.
+  trigger:
+  - platform: state
+    entity_id:
+    - group.family_everyone
+    to: home
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+  condition: []
+  action:
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    target:
+      entity_id:
+      - automation.holly_zone
+      - automation.mark_zone
+  mode: single
+- id: '1675545910170'
+  alias: Aqara Magic Cube
+  description: ''
+  use_blueprint:
+    path: rvaidya/aqara_magic_cube.yaml
+    input:
+      remote: 84915f011f53ba8ccf76bcfb5aea9765
+      active_face: input_number.cube_face
+      flip_90: false
+      cube_flip_90: []
+      cube_flip_1:
+      - service: notify.alexa_media_family_echo
+        data:
+          data:
+            type: tts
+          message: kitchen lights
+      cube_shake:
+      - service: remote.toggle
+        data:
+          activity: Fire Stick
+        target:
+          device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+      slide_any_side: false
+      cube_slide_any: []
+      knock_any_side: false
+      cube_knock_any: []
+      rotate_any_side: false
+      rotate_right: []
+      rotate_left: []
+      flip_any: true
+      cube_flip_2:
+      - service: notify.alexa_media_family_echo
+        data:
+          message: lamp controls
+          data:
+            type: tts
+      cube_flip_3:
+      - service: notify.alexa_media_family_echo
+        data:
+          message: ceiling fan controls
+          data:
+            type: tts
+      cube_flip_4:
+      - service: notify.alexa_media_family_echo
+        data:
+          message: TV Controls
+          data:
+            type: tts
+      cube_flip_5:
+      - service: notify.alexa_media_family_echo
+        data:
+          message: Volume Controls
+          data:
+            type: tts
+      cube_flip_6: []
+      one_to_one:
+      - service: light.toggle
+        data: {}
+        target:
+          entity_id: light.kitchen
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.kitchen_cabinets
+      slide_on_one:
+      - service: light.toggle
+        data: {}
+        target:
+          entity_id: light.kitchen
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.kitchen_cabinets
+      slide_on_two:
+      - service: light.toggle
+        data: {}
+        target:
+          entity_id: light.family_room_lamp
+      rotate_left_side_2:
+      - service: light.turn_on
+        data:
+          brightness_step_pct: -10
+        target:
+          device_id: 49084123033ed91e58adc6cb4de7ccd8
+      rotate_right_side_2:
+      - service: light.turn_on
+        data:
+          brightness_step_pct: 10
+        target:
+          device_id: 49084123033ed91e58adc6cb4de7ccd8
+      rotate_right_side_1:
+      - service: light.turn_on
+        data:
+          brightness_step_pct: 10
+        target:
+          device_id: 9f78db1000747c0e134c3ed2c91f8e7d
+      rotate_left_side_1:
+      - service: light.turn_on
+        data:
+          brightness_step_pct: 10
+        target:
+          device_id: 9f78db1000747c0e134c3ed2c91f8e7d
+      two_to_two:
+      - service: light.toggle
+        data: {}
+        target:
+          device_id: 49084123033ed91e58adc6cb4de7ccd8
+      three_to_three:
+      - service: light.toggle
+        data: {}
+        target:
+          entity_id: light.family_fan
+      slide_on_three:
+      - service: fan.toggle
+        data: {}
+        target:
+          device_id: 5aa26700165cc6f66821bff5d98c980b
+      rotate_left_side_3:
+      - service: fan.decrease_speed
+        data: {}
+        target:
+          device_id: 5aa26700165cc6f66821bff5d98c980b
+      rotate_right_side_3:
+      - service: fan.increase_speed
+        data: {}
+        target:
+          device_id: 5aa26700165cc6f66821bff5d98c980b
+      four_to_four:
+      - service: remote.send_command
+        data:
+          device: '75304590'
+          command: Play
+        target:
+          device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+      slide_on_four:
+      - service: remote.send_command
+        data:
+          device: '75304590'
+          command: Stop
+        target:
+          device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+      rotate_left_side_4:
+      - service: remote.send_command
+        data:
+          device: '75304590'
+          command: SkipBack
+        target:
+          device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+      rotate_right_side_4:
+      - service: remote.send_command
+        data:
+          device: '75304590'
+          command: SkipForward
+        target:
+          device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+      slide_on_five:
+      - service: remote.send_command
+        data:
+          device: '50980901'
+          command: Mute
+        target:
+          device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+      rotate_left_side_5:
+      - service: remote.send_command
+        data:
+          device: '50980901'
+          command: VolumeDown
+        target:
+          device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+      rotate_right_side_5:
+      - service: remote.send_command
+        data:
+          device: '50980901'
+          command: VolumeUp
+        target:
+          device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+- id: '1675697412917'
+  alias: Chore Sweepers
+  description: tag scan and reset for sweeper cleaning
+  trigger:
+  - platform: tag
+    tag_id: f7577aa9-8551-437d-a8c8-b9f061ff59b4
+    id: alice
+  - platform: tag
+    tag_id: 08a34285-3566-4cca-84a7-3ec8d59bdd65
+    id: benson
+  - platform: tag
+    tag_id: cdc34858-ca44-4603-ad44-537bfe3ae610
+    id: lurch
+  - platform: tag
+    tag_id: 699f74f7-9f79-4726-960c-30ab726134c9
+    id: belvedere
+  - platform: tag
+    tag_id: 70079f5e-4605-4fdb-acaa-2eb8acccdb92
+    id: rosie
+  - platform: time
+    id: reset
+    at: '23:00:00'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: alice
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.clean_alice
+    - conditions:
+      - condition: trigger
+        id: benson
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.clean_benson
+    - conditions:
+      - condition: trigger
+        id: lurch
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.clean_lurch
+    - conditions:
+      - condition: trigger
+        id: belvedere
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.clean_mr_belvedere
+    - conditions:
+      - condition: trigger
+        id: rosie
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.clean_rosie
+    - conditions:
+      - condition: trigger
+        id: reset
+      - condition: template
+        value_template: '{{ now().weekday() == 0 }}'
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id:
+          - input_boolean.clean_alice
+          - input_boolean.clean_benson
+          - input_boolean.clean_lurch
+          - input_boolean.clean_rosie
+          - input_boolean.clean_mr_belvedere
+  mode: single
+- id: '1675972683768'
+  alias: Tag Assistance
+  description: call for help when scanned one in each car
+  trigger:
+  - platform: tag
+    tag_id: Assistance Required
+  condition: []
+  action:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - service: media_player.play_media
+    data:
+      media_content_id: announce " {{ states('input_text.who_is_this') }} needs help!
+        "
+      media_content_type: custom
+    target:
+      entity_id: media_player.portable_echo
+  mode: single

@@ -1,0 +1,778 @@
+upstairs_heater_power:
+  alias: Upstairs Heater Power
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Upstairs Heater
+      command: power
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:power
+upstairs_heater_timer:
+  alias: Upstairs Heater Timer
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Upstairs Heater
+      command: timer
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:timer-outline
+upstairs_heater_up:
+  alias: Upstairs Heater Up
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Upstairs Heater
+      command: up
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:arrow-up-bold-circle
+upstairs_heater_down:
+  alias: Upstairs Heater Down
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Upstairs Heater
+      command: down
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:arrow-down-bold-circle
+master_tv_power:
+  alias: Master TV Power
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: power
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:power
+master_tv_volume_up:
+  alias: Master TV Volume Up
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: volume up
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:plus-thick
+master_tv_volume_down:
+  alias: Master TV Volume Down
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: volume down
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:minus-thick
+master_tv_channel_up:
+  alias: Master TV Channel Up
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: channel up
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:chevron-up
+master_tv_channel_down:
+  alias: Master TV Channel Down
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: channel down
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:chevron-down
+master_tv_input:
+  alias: Master TV Input
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: input
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:import
+master_tv_select:
+  alias: Master TV Select
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: select
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:alpha-a
+master_tv_timer:
+  alias: Master TV Timer
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: timer
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:alpha-b
+master_tv_volume_down_hold:
+  alias: Master TV Volume Down (hold)
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: volume down
+      num_repeats: 5
+      delay_secs: 0.4
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:minus-thick
+master_tv_volume_up_hold:
+  alias: Master TV Volume Up (hold)
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Master TV
+      command: volume up
+      num_repeats: 5
+      delay_secs: 0.4
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:plus-thick
+moon_lamp_1:
+  alias: Moon Lamp 1
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 1
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:arrow-up-bold-circle-outline
+moon_lamp_2:
+  alias: Moon Lamp 2
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 2
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:arrow-down-bold-circle-outline
+moon_lamp_off:
+  alias: Moon Lamp Off
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 'off'
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:power-off
+moon_lamp_on:
+  alias: Moon Lamp On
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 'on'
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:power-on
+moon_lamp_5:
+  alias: Moon Lamp 5
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 5
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:alpha-r-circle-outline
+moon_lamp_6:
+  alias: Moon Lamp 6
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 6
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:alpha-g-circle-outline
+moon_lamp_7:
+  alias: Moon Lamp 7
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 7
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:alpha-b-circle-outline
+moon_lamp_8:
+  alias: Moon Lamp 8
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 8
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:alpha-w-circle-outline
+moon_lamp_9:
+  alias: Moon Lamp 9
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 9
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_10:
+  alias: Moon Lamp 10
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 10
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_11:
+  alias: Moon Lamp 11
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 11
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_12:
+  alias: Moon Lamp 12
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 12
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:flash
+moon_lamp_13:
+  alias: Moon Lamp 13
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 13
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_14:
+  alias: Moon Lamp 14
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 14
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_15:
+  alias: Moon Lamp 15
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 15
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_16:
+  alias: Moon Lamp 16
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 16
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:alpha-s-circle-outline
+moon_lamp_17:
+  alias: Moon Lamp 17
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 17
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_18:
+  alias: Moon Lamp 18
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 18
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_19:
+  alias: Moon Lamp 19
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 19
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_20:
+  alias: Moon Lamp 20
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 20
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:alpha-f-circle-outline
+moon_lamp_21:
+  alias: Moon Lamp 21
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 21
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_22:
+  alias: Moon Lamp 22
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 22
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_23:
+  alias: Moon Lamp 23
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 23
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:circle
+moon_lamp_24:
+  alias: Moon Lamp 24
+  sequence:
+  - service: remote.send_command
+    data:
+      device: Moon Lamp
+      command: 24
+    target:
+      device_id: 687d5dcbc7f9474e09148fb0c4c196fa
+  mode: single
+  icon: mdi:alpha-s-box-outline
+coffee_button:
+  alias: Coffee Button (Basement)
+  sequence:
+  - service: input_boolean.toggle
+    data: {}
+    target:
+      entity_id: input_boolean.basement_coffee_button
+  mode: single
+coffee_button_upstairs:
+  alias: Coffee Button (Upstairs)
+  sequence:
+  - service: input_boolean.toggle
+    data: {}
+    target:
+      entity_id: input_boolean.upstairs_coffee_button
+  mode: single
+activate_alexa_actionable_notification:
+  description: Activates an actionable notification on a specific echo device
+  fields:
+    text:
+      description: The text you would like alexa to speak.
+      example: What would you like the thermostat set to?
+    event_id:
+      description: Correlation ID for event responses
+      example: ask_for_temperature
+    alexa_device:
+      description: Alexa device you want to trigger
+      example: media_player.basement_echo
+  sequence:
+  - service: input_text.set_value
+    data:
+      entity_id: input_text.alexa_actionable_notification
+      value: '{"text": "{{ text }}", "event": "{{ event_id }}"}'
+  - service: media_player.play_media
+    data:
+      media_content_type: skill
+      media_content_id: amzn1.ask.skill.98db150b-5f65-4313-bb1e-24bc9fc1ad01
+    target:
+      entity_id: '{{ alexa_device }}'
+green_vaporizor:
+  alias: Vaporizer Green
+  sequence:
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.family_room_temp_sensor_humidity
+      attribute: humidity
+      below: 45
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.green_plug
+  mode: single
+  icon: mdi:heat-wave
+yellow_vaporizor:
+  alias: Vaporizer Yellow
+  sequence:
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.master_bedroom_temp_sensor_humidity
+      attribute: humidity
+      below: 55
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.yellow_plug
+  mode: single
+  icon: mdi:heat-wave
+text_mark_medicine:
+  alias: Mark Medicine Notification
+  sequence:
+  - if:
+    - condition: state
+      entity_id: person.mark
+      state: home
+    then:
+    - service: notify.alexa_media_all_echos
+      data:
+        message: <voice name="Kendra">Mark, <break time="700ms"/> did you take your
+          pills?</voice>
+        data:
+          type: announce
+    else:
+    - if:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: person.mark
+          state: home
+      then:
+      - service: notify.email
+        data:
+          message: Did you take your pills?
+          title: Medicine
+          target:
+          - 3305243522@vtext.com
+  - delay:
+      hours: 0
+      minutes: 15
+      seconds: 0
+      milliseconds: 0
+  mode: single
+  icon: mdi:message-alert
+roku_volume_down:
+  alias: Roku Volume Down
+  sequence:
+  - service: remote.send_command
+    data:
+      command: volume_down
+    target:
+      entity_id: remote.32_tcl_roku_tv
+  mode: single
+roku_volume_up:
+  alias: Roku Volume Up
+  sequence:
+  - service: remote.send_command
+    data:
+      command: volume_up
+    target:
+      entity_id: remote.32_tcl_roku_tv
+  mode: single
+roku_volume_mute:
+  alias: Roku Volume Mute
+  sequence:
+  - service: remote.send_command
+    data:
+      command: volume_mute
+    target:
+      entity_id: remote.32_tcl_roku_tv
+  mode: single
+roku_power:
+  alias: Roku Power
+  sequence:
+  - service: remote.send_command
+    data:
+      command: power
+    target:
+      entity_id: remote.32_tcl_roku_tv
+  mode: single
+green_door:
+  alias: Green Door
+  sequence:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.green_garage_door_sensor_contact
+      state: 'off'
+    then:
+    - service: cover.open_cover
+      data: {}
+      target:
+        entity_id: cover.green_door
+    else:
+    - if:
+      - condition: state
+        entity_id: binary_sensor.green_garage_door_sensor_contact
+        state: 'on'
+      then:
+      - service: cover.close_cover
+        data: {}
+        target:
+          entity_id: cover.green_door
+  mode: single
+  icon: mdi:garage-alert-variant
+blue_door:
+  alias: Blue Door
+  sequence:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.blue_garage_door_sensor_contact
+      state: 'off'
+    then:
+    - service: cover.open_cover
+      data: {}
+      target:
+        entity_id: cover.blue_door
+    else:
+    - if:
+      - condition: state
+        entity_id: binary_sensor.blue_garage_door_sensor_contact
+        state: 'on'
+      then:
+      - service: cover.close_cover
+        data: {}
+        target:
+          entity_id: cover.blue_door
+  mode: single
+  icon: mdi:garage-alert-variant
+leaving_house_mark:
+  alias: Leaving House Mark
+  sequence:
+  - service: lock.unlock
+    data: {}
+    target:
+      entity_id: lock.garage_door
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - service: script.green_door
+    data: {}
+  mode: single
+  icon: mdi:human-greeting-variant
+leaving_house_holly:
+  alias: Leaving House Holly
+  sequence:
+  - service: lock.unlock
+    data: {}
+    target:
+      entity_id: lock.garage_door
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - service: script.blue_door
+    data: {}
+  mode: single
+  icon: mdi:human-greeting-variant
+guest_motion:
+  alias: Guest Motion
+  sequence:
+  - if:
+    - condition: state
+      entity_id: input_boolean.house_guest
+      state: 'on'
+    then:
+    - service: automation.turn_off
+      data: {}
+      target:
+        entity_id: automation.turn_motion_sensor_off
+    - service: automation.turn_on
+      data: {}
+      target:
+        entity_id: automation.upstairs_staircase_motion_lights
+    else:
+    - service: automation.turn_off
+      data: {}
+      target:
+        entity_id: automation.turn_motion_sensor_off
+  mode: single
+mark_shot_notification:
+  alias: Mark Shot Notification
+  sequence:
+  - if:
+    - condition: state
+      entity_id: person.mark
+      state: home
+    then:
+    - service: notify.alexa_media_all_echos
+      data:
+        message: <voice name="Kendra">Mark, <break time="700ms"/> did you take your
+          shot?</voice>
+        data:
+          type: announce
+    else:
+    - if:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: person.mark
+          state: home
+      then:
+      - service: notify.email
+        data:
+          message: Did you take your shot?
+          target:
+          - 3305243522@vtext.com
+          title: Shots
+  - delay:
+      hours: 0
+      minutes: 15
+      seconds: 0
+      milliseconds: 0
+  mode: single
+  icon: mdi:message-alert
+automatic_door_locks:
+  alias: Automatic Door Locks
+  sequence:
+  - service: lock.lock
+    data: {}
+    target:
+      entity_id: lock.house_locks
+  mode: single
+wakeup_master_lights:
+  alias: wakeup master lights
+  sequence:
+  - service: light.turn_on
+    data:
+      brightness: 1
+    target:
+      entity_id:
+      - light.holly_lamp
+      - light.coffee_light
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 3
+      milliseconds: 0
+  - repeat:
+      until:
+      - condition: numeric_state
+        entity_id: light.holly_lamp
+        attribute: brightness
+        above: 254
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_step_pct: 10
+        target:
+          entity_id:
+          - light.holly_lamp
+          - light.coffee_light
+      - delay:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
+  - service: light.turn_on
+    data: {}
+    target:
+      entity_id: light.master_fan
+  mode: single
+notify_all:
+  description: Notify all of devices
+  fields:
+    title:
+      description: The Title of the notification
+      example: Example text
+    message:
+      description: The content
+      example: Example text
+  sequence:
+  - service: notify.mobile_app_iphone
+    data:
+      title: '{{ title }}'
+      message: '{{ message }}'
+  - service: notify.mobile_app_sm_n960u
+    data:
+      title: '{{ title }}'
+      message: '{{ message }}'
+  - service: notify.mobile_app_mark_s_ipad
+    data:
+      title: '{{ title }}'
+      message: '{{ message }}'
+  - service: notify.mobile_app_sm_a115a
+    data:
+      title: '{{ title }}'
+      message: '{{ message }}'
+  - service: notify.mobile_app_sm_g960u
+    data:
+      title: '{{ title }}'
+      message: '{{ message }}'
+  mode: single
+  alias: Notify All

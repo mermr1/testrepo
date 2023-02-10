@@ -1,0 +1,11 @@
+- name: 'email'
+  platform: smtp
+  sender: !secret logine2
+  recipient: 
+    - !secret logine2
+  server: !secret smtp_server
+  port: 587
+  timeout: 30
+  encryption: starttls
+  username: !secret logine2
+  password: !secret passwordlc

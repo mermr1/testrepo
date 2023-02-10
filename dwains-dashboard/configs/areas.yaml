@@ -1,0 +1,36 @@
+living_room:
+  sort_order: 1
+family_room:
+  sort_order: 2
+kitchen:
+  sort_order: 3
+bedroom:
+  sort_order: 5
+basement:
+  sort_order: 6
+breezeway:
+  sort_order: 7
+basement_staircase:
+  sort_order: 8
+garage:
+  sort_order: 9
+master_suite:
+  sort_order: 10
+kitchen_cabinets:
+  sort_order: 11
+hallway:
+  sort_order: 12
+guest_room:
+  sort_order: 4
+upstairs_office:
+  sort_order: 13
+master_bathroom:
+  sort_order: 14
+foyer:
+  sort_order: 15
+master_bedroom:
+  sort_order: 16
+porch:
+  sort_order: 17
+house:
+  sort_order: 18
