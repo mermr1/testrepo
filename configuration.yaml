@@ -55,3 +55,6 @@ withings:
 #    require_admin: true
 #    config:
 #      ingress: core_configurator
+
+shell_command:
+  pushupdates_to_github: /bin/bash pushupdates.sh
