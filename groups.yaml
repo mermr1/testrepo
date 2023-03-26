@@ -13,6 +13,23 @@ family_anyone:
     - person.holly
     - person.mark
 
+External Doors:
+  - binary_sensor.blue_garage_door_sensor_contact
+  - binary_sensor.green_garage_door_sensor_contact
+  - binary_sensor.back_garage_door_sensor_contact
+  - binary_sensor.porch_door_open
+  - binary_sensor.back_door_sensor
+  - binary_sensor.front_door_sensor
+
+Internal Doors:
+  - binary_sensor.garage_door_open
+
+House In Bed:
+  all: true
+  entities:
+  - input_boolean.bed_holly
+  - input_boolean.bed_mark
+
 ###list of echo devices
 echos:
   name: All Echos

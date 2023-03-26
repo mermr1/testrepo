@@ -82,3 +82,143 @@
       state: 'off'
   icon: mdi:microsoft-office
   metadata: {}
+- id: '1676664502728'
+  name: Basement Work
+  entities:
+    light.master_suite:
+      supported_color_modes:
+      - xy
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - Coffee Light
+      - Hollys Lamp
+      dynamics: false
+      icon: mdi:lamps
+      friendly_name: Master Suite
+      supported_features: 40
+      state: 'off'
+    light.family_room:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - Family Room Lamp
+      dynamics: false
+      icon: mdi:lamp
+      friendly_name: Family Room
+      supported_features: 40
+      state: 'off'
+    light.guest_room:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - Guest Room Lamp
+      dynamics: false
+      icon: mdi:lamp
+      friendly_name: Guest room
+      supported_features: 40
+      state: 'off'
+    light.living_room:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - Living Room Right
+      - Living Room Left
+      - Fire Place Left
+      - Fire Place Right
+      dynamics: false
+      icon: mdi:lamps
+      friendly_name: Living room
+      supported_features: 40
+      state: 'off'
+    light.kitchen:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - Fridge1
+      - Fridge3
+      - Fridge2
+      - Kfan1
+      - Kfan3
+      - Kfan2
+      dynamics: false
+      icon: mdi:ceiling-light
+      friendly_name: Kitchen
+      supported_features: 40
+      state: 'off'
+    light.breezeway:
+      min_color_temp_kelvin: 2202
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 454
+      supported_color_modes:
+      - color_temp
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - bfan4
+      - bfan1
+      - bfan3
+      - bfan2
+      dynamics: false
+      icon: mdi:ceiling-fan-light
+      friendly_name: Breezeway
+      supported_features: 40
+      state: 'off'
+    light.garage:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - gbulb1
+      - gbulb2
+      dynamics: false
+      icon: mdi:ceiling-light
+      friendly_name: Garage
+      supported_features: 40
+      state: 'off'
+    light.hallway:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - hbulb1
+      - hbulb2
+      dynamics: false
+      icon: mdi:ceiling-light
+      friendly_name: Hallway
+      supported_features: 40
+      state: 'off'
+    switch.porch_light:
+      icon: mdi:light-switch
+      friendly_name: Porch Light
+      state: 'off'
+    switch.foyer_light:
+      icon: mdi:light-switch
+      friendly_name: Foyer light
+      state: 'off'
+  icon: mdi:home-minus
+  metadata: {}

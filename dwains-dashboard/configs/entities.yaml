@@ -1,5 +1,3 @@
-person.mqtt_user:
-  hidden: true
 camera.front_door_bell:
   hidden: false
   excluded: false

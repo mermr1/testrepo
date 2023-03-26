@@ -5,3 +5,451 @@
       {{ expand('group.echos') | selectattr('attributes.last_called','eq',True) | map(attribute='entity_id') | first }}
     availability: >
       {{ expand('group.echos') | selectattr('attributes.last_called','eq',True) | first is defined }}
+
+# set temperatures to one decimal point for dashboards      
+  - name: kitchen_temperature
+    unique_id: af62fb07-88e1-40a0-a364-3e97e9a1cbe6
+    state: >
+      {{ (states('sensor.kitchen_temp_sensor_temperature', 'state')|round(1)) }}
+  - name: family_room_temperature
+    unique_id: e055a23b-ae67-456c-9b5f-ceff45ad17c2
+    state: >
+      {{ (states('sensor.family_room_temp_sensor_temperature', 'state')|round(1)) }}
+  - name: living_room_temperature
+    unique_id: 6c3745bd-a051-4b5d-9fc7-cbfbea6ca972
+    state: >
+      {{ (states('sensor.living_room_temp_sensor_temperature', 'state')|round(1)) }}
+  - name: guest_room_temperature
+    unique_id: 299f0481-d439-49b8-8e0f-41fd05bcc39f
+    state: >
+      {{ (states('sensor.guest_room_temp_sensor_temperature', 'state')|round(1)) }}
+  - name: master_bedroom_temperature
+    unique_id: 84d1baa6-9c1f-4259-bba6-963a1390857a
+    state: >
+      {{ (states('sensor.master_bedroom_temp_sensor_temperature', 'state')|round(1)) }}
+  - name: garage_temperature
+    unique_id: 39b6216a-37d2-4926-a5fa-760327d73e9b
+    state: >
+      {{ (states('sensor.garage_motion_sensor_temperature', 'state')|round(1)) }}
+  - name: breezeway_temperature
+    unique_id: 7c0ff662-467b-454f-a11a-3c0f9657441c
+    state: >
+      {{ (states('sensor.breezeway_motion_sensor_temperature', 'state')|round(1)) }}
+  - name: basement_temperature
+    unique_id: b4c12dd6-911a-4543-8038-d88a1b8e9837
+    state: >
+      {{ (states('sensor.bstaircase_motion_sensor_d_temperature', 'state')|round(1)) }}
+  - name: firestone_house_temperature
+    unique_id: 75353129-3f50-49ee-b464-00c8f84846c0
+    state: >
+      {{ state_attr('weather.firestone_house', 'temperature')|round(1) }}
+
+# variables for configuring birthday announcements, texts, etc
+  - name: fname0
+    unique_id: 338d7e65-64af-4058-baa9-c6e9f0713633
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_0.state.split(' ') [0] }}
+  - name: lname0
+    unique_id: 1f3def92-2253-4fa1-9f91-33e0c3fcee28
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_0.state.split(' ') [1] }}
+  - name: bday0
+    unique_id: 61ae3014-1a03-4347-b73f-a5847164992a
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_0.state.split(' ') [3] }}
+  - name: byear0
+    unique_id: 5ec09376-a506-41dc-a20e-4d0c8b21d1f4
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_0', 'description') }}
+  - name: age0
+    unique_id: 2d50094a-1cec-4eef-af22-df412625467b
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_0', 'description')|int) }}
+  - name: bmonth0
+    unique_id: 2e68db9a-2b15-4bd1-8f98-b9ffe4dd2adc
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_0', 'start').strftime('%-m') }}
+
+  - name: fname1
+    unique_id: 228d5c94-7064-4f23-b20d-b6861fedaccc
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_1.state.split(' ') [0] }}
+  - name: lname1
+    unique_id: ef666564-fc25-45a8-8ce2-0e9a2168f225
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_1.state.split(' ') [1] }}
+  - name: bday1
+    unique_id: 6a916ece-a4f2-4c14-b2f9-7b1d30d1aa12
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_1.state.split(' ') [3] }}
+  - name: byear1
+    unique_id: 2904121a-e106-4780-8192-64b591f39261
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_1', 'description') }}
+  - name: age1
+    unique_id: eb1af8dc-93cf-46e7-b26e-77922ea48f47
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_1', 'description')|int) }}
+  - name: bmonth1
+    unique_id: f4bffbe5-26df-4980-849c-4ec16218e258
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_1', 'start').strftime('%-m') }}
+
+  - name: fname2
+    unique_id: 366f47dc-c677-430c-a858-7e7b95f26fdb
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_2.state.split(' ') [0] }}
+  - name: lname2
+    unique_id: 28e77615-a1ee-4412-8516-fa54d77786aa
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_2.state.split(' ') [1] }}
+  - name: bday2
+    unique_id: 72738734-a408-4a26-bf43-9252e27728d2
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_2.state.split(' ') [3] }}
+  - name: byear2
+    unique_id: b8920044-3634-431e-a3a1-e3b2d26865d8
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_2', 'description') }}
+  - name: age2
+    unique_id: a00c6881-b611-4cd0-a608-91def1ec3d4c
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_2', 'description')|int) }}
+  - name: bmonth2
+    unique_id: e8f06f4a-b810-401b-a8ad-55c8af8bd8dc
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_2', 'start').strftime('%-m') }}
+
+  - name: fname3
+    unique_id: 90283e45-796f-4a1c-ac71-4b0ce35f7775
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_3.state.split(' ') [0] }}
+  - name: lname3
+    unique_id: f9ecb15a-d029-40ac-bfa7-bbf404bbafa1
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_3.state.split(' ') [1] }}
+  - name: bday3
+    unique_id: c114c662-3566-47da-8bb6-285940fa5a00
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_3.state.split(' ') [3] }}
+  - name: byear3
+    unique_id: 6af9312e-ad7b-4e08-abc3-b01e9015e26c
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_3', 'description') }}
+  - name: age3
+    unique_id: 5705fdf8-5267-4dec-b9b2-6e4bbe3621de
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_3', 'description')|int) }}
+  - name: bmonth3
+    unique_id: 56f74f4c-5c46-45ee-bd75-b6d4907b73ff
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_3', 'start').strftime('%-m') }}
+
+  - name: fname4
+    unique_id: 0c599034-43e6-4b88-bd9f-9adcc4a909e1
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_4.state.split(' ') [0] }}
+  - name: lname4
+    unique_id: 54950d43-c591-44a1-a520-9396eee70e77
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_4.state.split(' ') [1] }}
+  - name: bday4
+    unique_id: d832a9a1-dc35-43f6-8c60-f6eef4da7fc3
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_4.state.split(' ') [3] }}
+  - name: byear4
+    unique_id: 66c3483e-ee14-4f0f-8d88-8e70c5819dc3
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_4', 'description') }}
+  - name: age4
+    unique_id: 509040e2-4ad8-45c9-854c-39c785e6528b
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_4', 'description')|int) }}
+  - name: bmonth4
+    unique_id: 63017ee3-93ef-459a-80d9-d861bdad87c9
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_4', 'start').strftime('%-m') }}
+
+  - name: fname5
+    unique_id: 1ec1dd8e-ea58-4e84-8ca2-cc6ee58c0a8d
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_5.state.split(' ') [0] }}
+  - name: lname5
+    unique_id: 7f72c131-2fec-43a9-af7e-e9c52df64321
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_5.state.split(' ') [1] }}
+  - name: bday5
+    unique_id: 2c7467f6-17a6-4d63-8f44-a91065a7585f
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_5.state.split(' ') [3] }}
+  - name: byear5
+    unique_id: 1a783ead-907c-419e-b7f5-2c30aba32319
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_5', 'description') }}
+  - name: age5
+    unique_id: 013ff31a-da23-45d3-a368-dc644a19a491
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_5', 'description')|int) }}
+  - name: bmonth5
+    unique_id: f229e9b7-ed29-466e-ba84-edac35bd26d2
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_5', 'start').strftime('%-m') }}
+
+  - name: fname6
+    unique_id: c680e99f-b616-4587-bd5f-6597c2b5fd79
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_6.state.split(' ') [0] }}
+  - name: lname6
+    unique_id: 310d010b-b9e7-4fdd-bab0-e47ea5ee4757
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_6.state.split(' ') [1] }}
+  - name: bday6
+    unique_id: e8ef5272-84ba-48c7-b4ce-49171b60163c
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_6.state.split(' ') [3] }}
+  - name: byear6
+    unique_id: da0259c9-e9a5-40d9-97fa-146b7514ac5c
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_6', 'description') }}
+  - name: age6
+    unique_id: 1a38c5f9-6cd2-443b-b39b-c3dfe8d7ed64
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_6', 'description')|int) }}
+  - name: bmonth6
+    unique_id: 976e4c93-bc4f-4f61-aa5a-caa8314061e6
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_6', 'start').strftime('%-m') }}
+
+  - name: fname7
+    unique_id: a48471b1-ac2a-450e-b819-2575afb52ac3
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_7.state.split(' ') [0] }}
+  - name: lname7
+    unique_id: 4c813b91-8810-4088-8c20-6b355701272c
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_7.state.split(' ') [1] }}
+  - name: bday7
+    unique_id: 27ca5309-3777-465f-b224-c5918802ae75
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_7.state.split(' ') [3] }}
+  - name: byear7
+    unique_id: 1aea30df-c538-4f37-a853-8c35e4fd2632
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_7', 'description') }}
+  - name: age7
+    unique_id: e2d8cac8-3e35-4333-b2ed-9666629fda61
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_7', 'description')|int) }}
+  - name: bmonth7
+    unique_id: bfdd37ec-5fa5-41d4-af04-e1bd0b71a9b9
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_7', 'start').strftime('%-m') }}
+
+  - name: fname8
+    unique_id: c5ecf729-628b-4a1a-9053-52c3e7fd44bd
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_8.state.split(' ') [0] }}
+  - name: lname8
+    unique_id: 0feddaa2-0c12-427a-9852-ec7a6c9bb36f
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_8.state.split(' ') [1] }}
+  - name: bday8
+    unique_id: 29855670-8852-4950-8629-04c57e937f27
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_8.state.split(' ') [3] }}
+  - name: byear8
+    unique_id: b727eed5-1510-4419-93c7-85ff39e84cf2
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_8', 'description') }}
+  - name: age8
+    unique_id: c5be84f7-a9b2-4be1-95c6-47e11f434874
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_8', 'description')|int) }}
+  - name: bmonth8
+    unique_id: 407a0564-7f99-4990-b115-f323f27aa03f
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_8', 'start').strftime('%-m') }}
+
+  - name: fname9
+    unique_id: 58bb9763-781e-4f5c-8410-3d36a564d515
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_9.state.split(' ') [0] }}
+  - name: lname9
+    unique_id: 7b20d7b6-ad09-4ea3-902a-0127bc4cf92f
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_9.state.split(' ') [1] }}
+  - name: bday9
+    unique_id: cd9c54d9-84d5-4a61-aef5-ac1ab5add451
+    state: >
+      {{ states.sensor.ical_nextbirthday_event_9.state.split(' ') [3] }}
+  - name: byear9
+    unique_id: 13b0b442-1378-4ef4-87bc-3a5d641c8c4a
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_9', 'description') }}
+  - name: age9
+    unique_id: abf343fc-0ec6-46a3-a149-4e00e59f645d
+    state: >
+      {{ (now().year) - (state_attr('sensor.ical_nextbirthday_event_9', 'description')|int) }}
+  - name: bmonth9
+    unique_id: 60388b43-7765-4d9d-8c17-5755989550d8
+    state: >
+      {{ state_attr('sensor.ical_nextbirthday_event_9', 'start').strftime('%-m') }}
+
+# set low and high temp for briefing and announcements
+  - name: lowtemp
+    unique_id: 019c19e5-2b2c-4f7b-9d67-04315f2af88c
+    state: >
+      {% set templow = 0 %}
+      {%  set templow = state_attr('weather.firestone_house_hourly', 'forecast')[0].temperature %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[1].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[1].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[2].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[2].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[3].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[3].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[4].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[4].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[5].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[5].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[6].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[6].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[7].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[7].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[8].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[8].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[9].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[9].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[10].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[10].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[11].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[11].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[12].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[12].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[13].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[13].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[14].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[14].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[15].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[15].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[16].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[16].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[17].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[17].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[18].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[18].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[19].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[19].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[20].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[20].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[21].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[21].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[22].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[22].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[23].temperature) < templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[23].temperature) %}
+      {% endif %}
+      {{ templow }}
+
+  - name: hightemp
+    unique_id: 43179678-c0bb-4a43-9f20-7dd230ab91ae
+    state: >
+      {% set templow = 0 %}
+      {%  set templow = state_attr('weather.firestone_house_hourly', 'forecast')[0].temperature %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[1].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[1].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[2].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[2].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[3].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[3].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[4].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[4].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[5].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[5].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[6].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[6].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[7].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[7].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[8].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[8].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[9].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[9].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[10].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[10].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[11].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[11].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[12].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[12].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[13].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[13].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[14].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[14].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[15].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[15].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[16].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[16].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[17].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[17].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[18].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[18].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[19].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[19].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[20].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[20].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[21].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[21].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[22].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[22].temperature) %}
+      {% endif %}
+      {% if (state_attr('weather.firestone_house_hourly', 'forecast')[23].temperature) > templow %}
+      {% set templow = (state_attr('weather.firestone_house_hourly', 'forecast')[23].temperature) %}
+      {% endif %}
+      {{ templow }}
+
+# set hvac status for easier automations
+  - name: hvac_status
+    unique_id: d9e26973-d993-4a05-a46a-489cedf05d2c
+    state: >
+      {{ state_attr('climate.house','hvac_action') }}

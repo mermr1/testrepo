@@ -1,29 +1,31 @@
 # Loads default set of integrations. Do not remove.
 default_config:
 
-my:
+# my:
 
 http:
 # SSL Certificate locations
   ssl_certificate: !secret fullchain
   ssl_key: !secret privkey
+# server host to listen only ipv4 kill ipv6
+#  server_host: 192.168.68.10
 # IP BAN
-  ip_ban_enabled: true
-  login_attempts_threshold: 5
 
 homeassistant:
 #  external_url: !secret externalurl
 #  internal_url: !secret internalurl
 
-cloud:
+# cloud:
+# [when use says invalid python ocnfig  **python_script:
 
-mobile_app:
+# mobile_app:
 
 # Load frontend themes from the themes folder
 frontend:
   themes: !include_dir_merge_named themes
-  extra_module_url:
-    - /config/www/community/lovelace-card-mod/card-mod.js
+# see if theis takes care of lovelace uncaught 0:0 in log files
+#  extra_module_url:
+#    - /config/www/community/lovelace-card-mod/card-mod.js
 
 # Text to speech
 tts:
@@ -42,7 +44,7 @@ template: !include templates.yaml
 
 # withings entry true every 120 minutes - false every 10 minutes
 withings:
-    use_webhook: false
+    use_webhook: true
 
 # Following add devices to sidebar for quick access
 #panel_custom:  
@@ -56,5 +58,9 @@ withings:
 #    config:
 #      ingress: core_configurator
 
+# For mounting SMB Network media
+# Note - if the mount doesn't work, substitute vers=3.0 with  vers=1.0 or vers=2.1
 shell_command:
+  mount_nas_folder: mkdir -p /media/nasfiles;mount -t cifs -o vers=3.0,noserverino,username=mermr1,password=hollyb76,domain=WORKGROUP //192.168.1.100/public /media/nasfiles
+
   pushupdates_to_github: /bin/bash pushupdates.sh

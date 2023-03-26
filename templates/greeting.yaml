@@ -1,0 +1,27 @@
+>
+  {%- macro briefingGreeting() -%} 
+    {% set time = now().hour %} 
+    {% if (time >= 17) %}
+      Good Evening.
+    {% elif (time >= 12) %}
+      Good Afternoon.
+    {% elif (time >= 4) %}
+      Good Morning.
+    {% else %}
+      Hello.
+    {% endif %}
+  {% endmacro %}
+
+  {# a macro that removes all newline characters, empty spaces #}
+  {%- macro cleanup(data) -%}
+    {%- for item in data.split("\n")  if item | trim != "" -%}
+      {{ item | trim }} {% endfor -%}
+  {%- endmacro -%}
+
+  {# a macro to call all macros :)  #}
+  {%- macro mother_of_all_macros() -%}
+      {{ briefingGreeting() }} You big butt, yellow belly, chicken!
+  {%- endmacro -%}
+
+  {# Call the macro  #}
+  {{- cleanup(mother_of_all_macros()) -}}

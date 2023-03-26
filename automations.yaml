@@ -62,6 +62,7 @@
           - switch.wall_left_plug
           - switch.wall_right_plug
           - switch.basement_coffee_plug
+          - switch.basement_counter_plug
       - type: turn_off
         device_id: fff1787a9e7a855b257b1b8cece4c160
         entity_id: remote.32_tcl_roku_tv
@@ -169,12 +170,12 @@
   description: Turn on space heater is temperature low and house occupied
   trigger:
   - platform: time
-    at: '19:00:00'
+    at: '20:30:00'
   condition:
   - condition: and
     conditions:
     - condition: numeric_state
-      entity_id: weather.forecast_home
+      entity_id: weather.firestone_house
       attribute: temperature
       below: 65
     - condition: state
@@ -185,6 +186,9 @@
     data:
       device: Upstairs Heater
       command: power
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 0
     target:
       device_id: 687d5dcbc7f9474e09148fb0c4c196fa
   - delay:
@@ -196,6 +200,9 @@
     data:
       device: Upstairs Heater
       command: timer
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 0
     target:
       device_id: 687d5dcbc7f9474e09148fb0c4c196fa
   mode: single
@@ -228,11 +235,12 @@
             entity_id: input_boolean.basement_coffee_ready
             state: 'on'
           then:
-          - service: notify.alexa_media_basement_echo
+          - service: script.activate_alexa_actionable_notification
             data:
-              message: You Already Pressed the Button
-              data:
-                type: tts
+              text: You already pushed the button, would you like me to start brewing
+                coffee?
+              event_id: basement_coffee_event
+              alexa_device: media_player.basement_echo
           else:
           - service: input_boolean.turn_on
             data: {}
@@ -252,7 +260,7 @@
           data: {}
           target:
             entity_id: input_boolean.basement_coffee_ready
-        - service: script.moon_lamp_off
+        - service: script.moon_lamp_off_2
           data: {}
     - conditions:
       - condition: trigger
@@ -292,7 +300,7 @@
           data: {}
           target:
             entity_id: input_boolean.upstairs_coffee_ready
-        - service: script.moon_lamp_off
+        - service: script.moon_lamp_off_2
           data: {}
   mode: single
 - id: '1674734486138'
@@ -373,6 +381,18 @@
     - binary_sensor.withings_in_bed_mark
     from: 'on'
     id: mark off
+  - platform: webhook
+    webhook_id: bed-sensors-d1jJhPAxx0jyIv8X-xkxkJJq
+    id: mark off
+  - platform: webhook
+    webhook_id: bed-sensors-yYI0gje9kR7UgsQpidE2Fe5g
+    id: mark on
+  - platform: webhook
+    webhook_id: bed-sensors-6GEBCdj2WBsfpsWPxZyN6-xK
+    id: holly off
+  - platform: webhook
+    webhook_id: bed-sensors-An9N8ObEgERMN8J_0SF55T_v
+    id: holly on
   condition: []
   action:
   - choose:
@@ -408,81 +428,6 @@
         data: {}
         target:
           entity_id: input_boolean.bed_holly
-  mode: single
-- id: '1674737248398'
-  alias: Upstairs Sweeper
-  description: turn lights on and off for rosie sweeping upstairs
-  trigger:
-  - platform: device
-    device_id: 201708e6b1aa1b169ee029b27b706945
-    domain: vacuum
-    entity_id: vacuum.rosie
-    type: docked
-    id: docked
-  - platform: state
-    entity_id:
-    - vacuum.rosie
-    from: docked
-    id: sweeping
-  - platform: event
-    event_type: alexa_actionable_notification
-    event_data:
-      event_id: upstairs_light_check
-      event_response_type: ResponseYes
-    id: light yes
-  - platform: event
-    event_type: alexa_actionable_notification
-    event_data:
-      event_id: upstairs_light_check
-      event_response_type: ResponseNone
-    id: light none
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: docked
-      sequence:
-      - service: script.activate_alexa_actionable_notification
-        data:
-          text: Is there anyone up here?
-          event_id: upstairs_light_check
-          alexa_device: media_player.master_echo
-    - conditions:
-      - condition: trigger
-        id: sweeping
-      sequence:
-      - service: light.turn_on
-        data: {}
-        target:
-          entity_id:
-          - light.master_bathroom
-          - light.master_fan
-          - light.holly_lamp
-          - light.coffee_light
-          - light.upstairs_office
-    - conditions:
-      - condition: trigger
-        id: light yes
-      sequence:
-      - service: notify.alexa_media_master_echo
-        data:
-          message: O.K., then I will not turn off the lights.
-          data:
-            type: tts
-    - conditions:
-      - condition: trigger
-        id: light none
-      sequence:
-      - service: light.turn_off
-        data: {}
-        target:
-          entity_id:
-          - light.upstairs_office
-          - light.coffee_light
-          - light.holly_lamp
-          - light.master_fan
-          - light.master_bathroom
   mode: single
 - id: '1674762589678'
   alias: Coffee Announcement
@@ -702,46 +647,6 @@
         target:
           entity_id: input_boolean.coffee_ran
   mode: single
-- id: '1674834057462'
-  alias: Porch Light
-  description: turn on porch light for 5 minutes of activity or door bell ring
-  trigger:
-  - type: occupied
-    platform: device
-    device_id: 0ce9b5f7ac710b9519b09723866ccaed
-    entity_id: binary_sensor.porch_door_bell_ding
-    domain: binary_sensor
-  - type: motion
-    platform: device
-    device_id: 0ce9b5f7ac710b9519b09723866ccaed
-    entity_id: binary_sensor.porch_door_bell_motion
-    domain: binary_sensor
-  condition:
-  - condition: and
-    conditions:
-    - condition: sun
-      before: sunrise
-      after: sunset
-    - condition: device
-      type: is_off
-      device_id: 5c4e0e7a5e0da916d245df19c94d1cb7
-      entity_id: switch.porch_light
-      domain: switch
-  action:
-  - type: turn_on
-    device_id: 5c4e0e7a5e0da916d245df19c94d1cb7
-    entity_id: switch.porch_light
-    domain: switch
-  - delay:
-      hours: 0
-      minutes: 5
-      seconds: 0
-      milliseconds: 0
-  - type: turn_off
-    device_id: 5c4e0e7a5e0da916d245df19c94d1cb7
-    entity_id: switch.porch_light
-    domain: switch
-  mode: single
 - id: '1674863381231'
   alias: Medication
   description: Medication reminders and button for Mark
@@ -855,30 +760,62 @@
         id: motion yes
       sequence:
       - if:
-        - condition: sun
-          before: sunset
-          after: sunrise
+        - condition: state
+          entity_id: light.upstairs_office
+          state: 'on'
         then:
-        - service: light.turn_on
-          data:
-            brightness_pct: 100
-          target:
-            entity_id: light.upstairs_office
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.upstairs_office_light_status
         else:
-        - service: light.turn_on
-          data:
-            brightness_pct: 25
-          target:
-            entity_id: light.upstairs_office
+        - if:
+          - condition: sun
+            before: sunset
+            after: sunrise
+          then:
+          - if:
+            - condition: state
+              entity_id: light.upstairs_office
+              state: 'off'
+            then:
+            - service: light.turn_on
+              data:
+                brightness_pct: 100
+              target:
+                entity_id: light.upstairs_office
+          else:
+          - if:
+            - condition: state
+              entity_id: light.upstairs_office
+              state: 'off'
+            then:
+            - service: light.turn_on
+              data:
+                brightness_pct: 25
+              target:
+                entity_id: light.upstairs_office
     - conditions:
       - condition: trigger
         id: motion no
       sequence:
-      - service: light.turn_off
-        data:
-          transition: 15
-        target:
-          entity_id: light.upstairs_office
+      - delay:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
+      - if:
+        - condition: state
+          entity_id: input_boolean.upstairs_office_light_status
+          state: 'on'
+        then:
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.upstairs_office_light_status
+        else:
+        - service: light.turn_off
+          data: {}
+          target:
+            entity_id: light.upstairs_office
     - conditions:
       - condition: trigger
         id: low battery
@@ -923,11 +860,22 @@
       - condition: trigger
         id: appliance open
       sequence:
-      - service: light.turn_on
-        data:
-          brightness_pct: 100
-        target:
+      - if:
+        - condition: state
           entity_id: light.hallway
+          state: 'off'
+        then:
+        - service: light.turn_on
+          data:
+            brightness_pct: 100
+          target:
+            entity_id: light.hallway
+        else:
+        - service: automation.turn_off
+          data:
+            stop_actions: false
+          target:
+            entity_id: automation.appliance_cabinet_light
     - conditions:
       - condition: trigger
         id: appliance closed
@@ -966,12 +914,21 @@
     - input_boolean.bed_mark
     to: 'on'
     id: 'On'
+    enabled: true
   - platform: state
     entity_id:
     - input_boolean.bed_holly
     - input_boolean.bed_mark
+    - light.upstairs_office
     to: 'off'
     id: 'Off'
+    enabled: true
+  - platform: state
+    entity_id:
+    - light.upstairs_office
+    to: 'on'
+    id: manual on
+    enabled: false
   condition: []
   action:
   - choose:
@@ -996,25 +953,97 @@
           data:
             stop_actions: false
           target:
-            entity_id: automation.upstairs_staircase_motion_lights
+            entity_id:
+            - automation.upstairs_staircase_motion_lights
+            - automation.upstairs_staircase_motion_manual_override
         - service: light.turn_off
           data: {}
           target:
             entity_id: light.upstairs_office
+        - service: fan.turn_off
+          data: {}
+          target:
+            entity_id: fan.family_fan
+        - if:
+          - condition: time
+            after: '18:00:00'
+            before: '23:59:59'
+            weekday:
+            - sat
+            - fri
+            - thu
+            - wed
+            - tue
+            - mon
+            - sun
+          then:
+          - service: light.turn_off
+            data: {}
+            target:
+              entity_id: '{% set reject = [ ''master_fan'', ''holly_lamp'', ''whole_house''
+                ] %} {{ states.light | rejectattr(''object_id'', ''in'', reject) |
+                selectattr(''state'',''eq'',''on'') | map(attribute=''entity_id'')
+                | list }}
+
+                '
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 5
+              milliseconds: 0
+          - service: light.turn_off
+            data: {}
+            target:
+              entity_id: '{% set reject = [ ''master_fan'', ''holly_lamp'', ''whole_house''
+                ] %} {{ states.light | rejectattr(''object_id'', ''in'', reject) |
+                selectattr(''state'',''eq'',''on'') | map(attribute=''entity_id'')
+                | list }}
+
+                '
     - conditions:
-      - condition: or
-        conditions:
-        - condition: state
-          entity_id: input_boolean.bed_holly
-          state: 'off'
-        - condition: state
-          entity_id: input_boolean.bed_mark
-          state: 'off'
+      - condition: trigger
+        id: 'Off'
       sequence:
-      - service: automation.turn_on
-        data: {}
-        target:
-          entity_id: automation.upstairs_staircase_motion_lights
+      - if:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: input_boolean.bed_holly
+            state: 'off'
+          - condition: state
+            entity_id: input_boolean.bed_mark
+            state: 'off'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id:
+            - automation.upstairs_staircase_motion_lights
+            - automation.upstairs_staircase_motion_manual_override
+    - conditions:
+      - condition: trigger
+        id: manual on
+      sequence:
+      - if:
+        - condition: state
+          entity_id: binary_sensor.upstairs_staircase_motion_sensor_occupancy
+          state: 'off'
+        - condition: and
+          conditions:
+          - condition: or
+            conditions:
+            - condition: state
+              entity_id: input_boolean.bed_holly
+              state: 'off'
+            - condition: state
+              entity_id: input_boolean.bed_mark
+              state: 'off'
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: false
+          target:
+            entity_id: automation.upstairs_staircase_motion_lights
   mode: single
 - id: '1674997041729'
   alias: Battery Check
@@ -1367,26 +1396,6 @@
           - service: script.mark_shot_notification
             data: {}
   mode: single
-- id: '1675181240432'
-  alias: Holly Home Message
-  description: notify basement tv holly is home
-  trigger:
-  - platform: zone
-    entity_id: person.holly
-    zone: zone.geofence
-    event: enter
-  condition: []
-  action:
-  - service: notify.android_tv_fire_tv
-    data:
-      message: Holly is home!
-      title: Firestone House
-      data:
-        duration: '10'
-        fontsize: max
-        interrupt: 1
-        color: indigo
-  mode: single
 - id: '1675268056074'
   alias: Zone Mark
   description: run scripts when mark leaves and comes back home
@@ -1468,7 +1477,7 @@
             data: {}
   mode: single
 - id: '1675278357388'
-  alias: Low battery level check & notification
+  alias: Low Battery Level Check
   description: check for batteries under 10% and text mark
   use_blueprint:
     path: sbyx/low-battery-level-detection-notification-for-all-battery-sensors.yaml
@@ -1479,14 +1488,19 @@
         - sensor.sm_a115a_battery_level
         - sensor.sm_g960u_battery_level
         - sensor.sm_n960u_battery_level
-        - sensor.iphone_battery_level
         - sensor.mark_s_ipad_battery_level
+        - sensor.alice_battery_level
+        - sensor.benson_battery_level
+        - sensor.iphone_battery_level
+        - sensor.lurch_battery_level
+        - sensor.mister_belvedere_battery_level
+        - sensor.rosie_battery_level
       actions:
-      - service: notify.email
-        data:
-          target:
-          - 3305243522@vtext.com
-          message: 'message: Low battery level{{ '':'' }}{{ ''\n'' -}}{{sensors}}'
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id:
+          - input_boolean.kill_switch_battery_check
       time: 06:00:00
 - id: '1675279703186'
   alias: Morning Briefing Holly
@@ -1516,18 +1530,14 @@
   action:
   - service: script.leaving_house_holly
     data: {}
+    enabled: true
   - delay:
       hours: 0
       minutes: 0
-      seconds: 10
+      seconds: 3
       milliseconds: 0
-  - service: media_player.play_media
-    data:
-      media_content_id: Alexa.Weather.Play
-      media_content_type: sequence
-    target:
-      entity_id:
-      - media_player.portable_echo
+  - service: script.morning_briefing_holly
+    data: {}
   mode: single
 - id: '1675280095669'
   alias: Zone Holly
@@ -1645,7 +1655,7 @@
       - delay:
           hours: 0
           minutes: 0
-          seconds: 0
+          seconds: 2
           milliseconds: 500
       - if:
         - condition: state
@@ -1678,7 +1688,7 @@
       - delay:
           hours: 0
           minutes: 0
-          seconds: 0
+          seconds: 2
           milliseconds: 500
       - if:
         - condition: state
@@ -1904,7 +1914,7 @@
         target:
           device_id: 88f67465a2e48f4b8dc487a33c4dccc7
 - id: '1675697412917'
-  alias: Chore Sweepers
+  alias: Chores
   description: tag scan and reset for sweeper cleaning
   trigger:
   - platform: tag
@@ -1923,8 +1933,33 @@
     tag_id: 70079f5e-4605-4fdb-acaa-2eb8acccdb92
     id: rosie
   - platform: time
-    id: reset
-    at: '23:00:00'
+    at: 00:15:00
+    id: daily reset
+  - platform: state
+    entity_id:
+    - input_boolean.water_fountain_change
+    id: fountain count
+  - platform: template
+    value_template: '{{ now().weekday() == 0 }}'
+    id: Monday
+  - platform: template
+    value_template: '{{ now().weekday() == 1 }}'
+    id: Tuesday
+  - platform: template
+    value_template: '{{ now().weekday() == 2 }}'
+    id: Wednesday
+  - platform: template
+    value_template: '{{ now().weekday() == 3 }}'
+    id: Thursday
+  - platform: template
+    value_template: '{{ now().weekday() == 4 }}'
+    id: Friday
+  - platform: template
+    value_template: '{{ now().weekday() == 5 }}'
+    id: Saturday
+  - platform: template
+    value_template: '{{ now().weekday() == 6 }}'
+    id: Sunday
   condition: []
   action:
   - choose:
@@ -1970,9 +2005,7 @@
           entity_id: input_boolean.clean_rosie
     - conditions:
       - condition: trigger
-        id: reset
-      - condition: template
-        value_template: '{{ now().weekday() == 0 }}'
+        id: Monday
       sequence:
       - service: input_boolean.turn_on
         data: {}
@@ -1983,6 +2016,77 @@
           - input_boolean.clean_lurch
           - input_boolean.clean_rosie
           - input_boolean.clean_mr_belvedere
+    - conditions:
+      - condition: trigger
+        id: daily reset
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.water_fountain_clean
+          state: 'off'
+        then:
+        - service: input_boolean.toggle
+          data: {}
+          target:
+            entity_id: input_boolean.water_fountain_change
+    - conditions:
+      - condition: trigger
+        id: Tuesday
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id:
+          - input_boolean.clean_steps
+          - input_boolean.dust_house
+    - conditions:
+      - condition: trigger
+        id: fountain count
+      sequence:
+      - if:
+        - condition: numeric_state
+          entity_id: counter.water_fountain_count
+          below: 10
+        then:
+        - service: counter.increment
+          data: {}
+          target:
+            entity_id: counter.water_fountain_count
+        else:
+        - service: counter.reset
+          data: {}
+          target:
+            entity_id: counter.water_fountain_count
+        - service: input_boolean.turn_on
+          data: {}
+          target:
+            entity_id: input_boolean.water_fountain_clean
+    - conditions:
+      - condition: trigger
+        id: Wednesday
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id:
+          - input_boolean.sweep_furniture
+          - input_boolean.clean_ceiling_fans
+    - conditions:
+      - condition: trigger
+        id: Thursday
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.clean_master_bathroom
+    - conditions:
+      - condition: trigger
+        id: Friday
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.clean_green_bathroom
   mode: single
 - id: '1675972683768'
   alias: Tag Assistance
@@ -2004,4 +2108,1909 @@
       media_content_type: custom
     target:
       entity_id: media_player.portable_echo
+  mode: single
+- id: '1676415940910'
+  alias: Porch Lights
+  description: Turn on off porch light
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: '-10:00'
+  condition: []
+  action: []
+  mode: single
+- id: '1676664698357'
+  alias: Working in Basement Office
+  description: turn lights off upstairs when holly not home and mark working in basement
+  trigger:
+  - platform: state
+    entity_id:
+    - light.basement
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  condition:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: person.mark
+      state: home
+    - condition: state
+      entity_id: input_boolean.house_guest
+      state: 'off'
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: person.holly
+        state: home
+  action:
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id: '{% set reject = [ ''basement'', ''bobulb2'', ''bobulb1'', ''bobulb3'',
+        ''whole_house'', ''wiz_bulb'' ] %} {{ states.light | rejectattr(''object_id'',
+        ''in'', reject) | selectattr(''state'',''eq'',''on'') | map(attribute=''entity_id'')
+        | list }}
+
+        '
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id: '{% set reject = [ ''basement'', ''bobulb2'', ''bobulb1'', ''bobulb3'',
+        ''whole_house'', ''wiz_bulb'' ] %} {{ states.light | rejectattr(''object_id'',
+        ''in'', reject) | selectattr(''state'',''eq'',''on'') | map(attribute=''entity_id'')
+        | list }}
+
+        '
+  mode: single
+- id: '1676767954778'
+  alias: Kill Switch
+  description: stops automations that are misbehaving
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_appliance_cabinet_light
+    id: appliance cabinet light
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_aqara_magic_cube
+    id: Aqara Magic Cube
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_backup_failure_notification
+    id: backup failure notification
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_basement_lights
+    id: basement lights
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_basement_motion
+    id: basement motion
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_battery_check
+    id: battery check
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_coffee_announcement
+    id: coffee announcement
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_coffee_button_press
+    id: coffee button press
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_low_battery_level_check
+    id: low battery level check
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_master_bathroom_light
+    id: master bathroom light
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_medicine_reminder
+    id: medicine reminder
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_morning_briefing_holly
+    id: morning briefing holly
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_tag_assistance
+    id: Tag Assistance
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_trash_reminder
+    id: trash reminder
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_turn_motion_sensor_on_off
+    id: turn motion sensor on/off
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_vaporizer_schedule
+    id: Vaporizer Schedule
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_who_is_driving_what_car
+    id: who is driving what car
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_working_in_basement_office
+    id: working in basement office
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_zone_disabled_when_home
+    id: zone disabled when home
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_zone_holly
+    id: zone holly
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_zone_mark
+    id: zone mark
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_upstairs_space_heater
+    id: upstairs space heater
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_birthday_reminder_text
+    id: birthday reminder text
+  - platform: state
+    entity_id:
+    - input_boolean.kill_switch_morning_briefing_mark
+    id: morning briefing mark
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: appliance cabinet light
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_appliance_cabinet_light
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id:
+            - automation.appliance_cabinet_light
+            - automation.appliance_cabinet_light_manual_override
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_appliance_cabinet_light
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id:
+              - automation.appliance_cabinet_light
+              - automation.appliance_cabinet_light_manual_override
+    - conditions:
+      - condition: trigger
+        id: Aqara Magic Cube
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_aqara_magic_cube
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.aqara_magic_cube
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_aqara_magic_cube
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.aqara_magic_cube
+    - conditions:
+      - condition: trigger
+        id: backup failure notification
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_backup_failure_notification
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.backup_failure_notification
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_backup_failure_notification
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.backup_failure_notification
+    - conditions:
+      - condition: trigger
+        id: basement lights
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_basement_lights
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.basement_sink
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_basement_lights
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.basement_sink
+    - conditions:
+      - condition: trigger
+        id: basement motion
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_basement_motion
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.basement_motion
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_basement_motion
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.basement_motion
+    - conditions:
+      - condition: trigger
+        id: battery check
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_battery_check
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.battery_check
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_battery_check
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.battery_check
+    - conditions:
+      - condition: trigger
+        id: coffee announcement
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_coffee_announcement
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.coffee_announcement
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_coffee_announcement
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.coffee_announcement
+    - conditions:
+      - condition: trigger
+        id: coffee button press
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_coffee_button_press
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.basement_coffee_button
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_coffee_button_press
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.basement_coffee_button
+    - conditions:
+      - condition: trigger
+        id: low battery level check
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_low_battery_level_check
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.low_battery_level_detection_notification_for_all_battery_sensors
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_low_battery_level_check
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.low_battery_level_detection_notification_for_all_battery_sensors
+    - conditions:
+      - condition: trigger
+        id: master bathroom light
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_master_bathroom_light
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.master_bathroom_light
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_master_bathroom_light
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.master_bathroom_light
+    - conditions:
+      - condition: trigger
+        id: medicine reminder
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_medicine_reminder
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.medicine_reminder_home
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_medicine_reminder
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.medicine_reminder_home
+    - conditions:
+      - condition: trigger
+        id: morning briefing holly
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_morning_briefing_holly
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.holly_morning_briefing
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_morning_briefing_holly
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.holly_morning_briefing
+    - conditions:
+      - condition: trigger
+        id: Tag Assistance
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_tag_assistance
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.test_assistance_tag
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_tag_assistance
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.test_assistance_tag
+    - conditions:
+      - condition: trigger
+        id: trash reminder
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_trash_reminder
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.trash_reminder
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_trash_reminder
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.trash_reminder
+    - conditions:
+      - condition: trigger
+        id: turn motion sensor on/off
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_turn_motion_sensor_on_off
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.turn_motion_sensor_off
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_turn_motion_sensor_on_off
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.turn_motion_sensor_off
+    - conditions:
+      - condition: trigger
+        id: Vaporizer Schedule
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_vaporizer_schedule
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.vaporizer_schedule
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_vaporizer_schedule
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.vaporizer_schedule
+    - conditions:
+      - condition: trigger
+        id: who is driving what car
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_who_is_driving_what_car
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.test_car_automation
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_who_is_driving_what_car
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.test_car_automation
+    - conditions:
+      - condition: trigger
+        id: working in basement office
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_working_in_basement_office
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.working_in_basement_office
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_working_in_basement_office
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.working_in_basement_office
+    - conditions:
+      - condition: trigger
+        id: zone disabled when home
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_zone_disabled_when_home
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.disable_zone_when_home
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_zone_disabled_when_home
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.disable_zone_when_home
+    - conditions:
+      - condition: trigger
+        id: zone holly
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_zone_holly
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.holly_zone
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_zone_holly
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.holly_zone
+    - conditions:
+      - condition: trigger
+        id: zone mark
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_zone_mark
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.mark_zone
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_zone_mark
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.mark_zone
+    - conditions:
+      - condition: trigger
+        id: upstairs space heater
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_upstairs_space_heater
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.upstairs_space_heater
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_upstairs_space_heater
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.upstairs_space_heater
+    - conditions:
+      - condition: trigger
+        id: birthday reminder text
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_birthday_reminder_text
+          state: 'off'
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: true
+          target:
+            entity_id: automation.birthday_reminder_text
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_birthday_reminder_text
+            state: 'on'
+          then:
+          - service: automation.turn_on
+            data: {}
+            target:
+              entity_id: automation.birthday_reminder_text
+    - conditions:
+      - condition: trigger
+        id: morning briefing mark
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.kill_switch_morning_briefing_mark
+          state: 'on'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.morning_briefing_mark
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.kill_switch_morning_briefing_mark
+            state: 'off'
+          then:
+          - service: automation.turn_off
+            data:
+              stop_actions: true
+            target:
+              entity_id: automation.morning_briefing_mark
+  mode: single
+- id: '1676848009583'
+  alias: Trash Reminder
+  description: Reminder to take out trash
+  trigger:
+  - platform: calendar
+    event: start
+    offset: 0:0:0
+    entity_id: calendar.trash
+    id: Trash Day
+  - platform: time
+    at: '17:00:00'
+    id: announcement
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: trash_can_event
+      event_response_type: ResponseYes
+    id: 'Yes'
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: trash_can_event
+      event_response_type: ResponseNo
+    id: 'No'
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: trash_can_event
+      event_response_type: ResponseNone
+    id: no answer
+  - platform: tag
+    tag_id: Trash Cans Done
+    id: tag scan
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: Trash Day
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.trash_cans
+    - conditions:
+      - condition: trigger
+        id: announcement
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.trash_cans
+          state: 'on'
+        then:
+        - service: script.activate_alexa_actionable_notification
+          data:
+            text: Did you remember to put the trash cans out for pickup tomorrow?
+            event_id: trash_can_event
+            alexa_device: media_player.kitchen_echo
+    - conditions:
+      - condition: trigger
+        id: 'Yes'
+      sequence:
+      - service: notify.alexa_media_kitchen_echo
+        data:
+          message: Good job you remembered!
+          data:
+            type: tts
+    - conditions:
+      - condition: trigger
+        id: 'No'
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 15
+          seconds: 0
+          milliseconds: 0
+      - if:
+        - condition: state
+          entity_id: input_boolean.trash_cans
+          state: 'on'
+        then:
+        - service: script.activate_alexa_actionable_notification
+          data:
+            text: Did you remember to put the trash cans out for pickup tomorrow?
+            event_id: trash_can_event
+            alexa_device: media_player.kitchen_echo
+        else:
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.trash_cans
+    - conditions:
+      - condition: trigger
+        id: no answer
+      sequence:
+      - service: notify.alexa_media
+        data:
+          message: '"<audio src=''https://markross.duckdns.org/local/images/tdirty.mp3''/>"'
+          target:
+          - media_player.family_echo
+          - media_player.master_echo
+          - media_player.basement_echo
+          - media_player.kitchen_echo
+          data:
+            type: tts
+      - delay:
+          hours: 0
+          minutes: 15
+          seconds: 0
+          milliseconds: 0
+      - if:
+        - condition: state
+          entity_id: input_boolean.trash_cans
+          state: 'on'
+        then:
+        - service: script.activate_alexa_actionable_notification
+          data:
+            text: Did you remember to put the trash cans out for pickup tomorrow?
+            event_id: trash_can_event
+            alexa_device: media_player.kitchen_echo
+        else:
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.trash_cans
+    - conditions:
+      - condition: trigger
+        id: tag scan
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.trash_cans
+  mode: single
+- id: '1677025316611'
+  alias: Alarm Lights
+  description: turn on lights when holly's phone alarm goes off
+  trigger:
+  - platform: template
+    value_template: '{{now().strftime("%a %h %d %H:%M %Z %Y") == (((state_attr(''sensor.sm_g960u_next_alarm'',
+      ''Time in Milliseconds'') | int / 1000)) | timestamp_custom(''%a %h %d %H:%M
+      %Z %Y''))}}'
+  condition:
+  - condition: state
+    entity_id: person.holly
+    state: home
+  action:
+  - service: script.wakeup_master_lights
+    data: {}
+  mode: single
+- id: '1678149826764'
+  alias: Sweeper Schedule Alice
+  description: Run Alice according to schedule time
+  trigger:
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_alice'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_alice'', ''minute''))
+      }}'
+    id: start
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_alice'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_alice'', ''minute'')
+      + 30) }}'
+    id: stop
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: start
+      sequence:
+      - service: vacuum.start
+        data: {}
+        target:
+          entity_id: vacuum.alice
+    - conditions:
+      - condition: trigger
+        id: stop
+      sequence:
+      - service: vacuum.return_to_base
+        data: {}
+        target:
+          entity_id: vacuum.alice
+  mode: single
+- id: '1678150112255'
+  alias: Sweeper Out Of Service
+  description: turn schedules on or off when out of service
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.sweeper_out_of_service_alice
+    id: alice
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+  - platform: state
+    entity_id:
+    - input_boolean.sweeper_out_of_service_benson
+    id: benson
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
+  - platform: state
+    entity_id:
+    - input_boolean.sweeper_out_of_service_lurch
+    id: lurch
+  - platform: state
+    entity_id:
+    - input_boolean.sweeper_out_of_service_mister_belvedere
+    id: mister belvedere
+  - platform: state
+    entity_id:
+    - input_boolean.sweeper_out_of_service_rosie
+    id: rosie
+  - platform: state
+    entity_id:
+    - switch.visitors
+    id: visitors
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: alice
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.sweeper_out_of_service_alice
+          state: 'on'
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: true
+          target:
+            entity_id: automation.sweeper_schedule_alice
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.sweeper_out_of_service_alice
+            state: 'off'
+          then:
+          - service: automation.turn_on
+            data: {}
+            target:
+              entity_id: automation.sweeper_schedule_alice
+    - conditions:
+      - condition: trigger
+        id: benson
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.sweeper_out_of_service_benson
+          state: 'on'
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: true
+          target:
+            entity_id: automation.sweeper_schedule_benson
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.sweeper_out_of_service_benson
+            state: 'off'
+          then:
+          - service: automation.turn_on
+            data: {}
+            target:
+              entity_id: automation.sweeper_schedule_benson
+    - conditions:
+      - condition: trigger
+        id: lurch
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.sweeper_out_of_service_lurch
+          state: 'on'
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: true
+          target:
+            entity_id: automation.sweeper_schedule_lurch
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.sweeper_out_of_service_lurch
+            state: 'off'
+          then:
+          - service: automation.turn_on
+            data: {}
+            target:
+              entity_id: automation.sweeper_schedule_lurch
+    - conditions:
+      - condition: trigger
+        id: mister belvedere
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.sweeper_out_of_service_mister_belvedere
+          state: 'on'
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: true
+          target:
+            entity_id: automation.sweeper_schedule_mister_belvedere
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.sweeper_out_of_service_mister_belvedere
+            state: 'off'
+          then:
+          - service: automation.turn_on
+            data: {}
+            target:
+              entity_id: automation.sweeper_schedule_mister_belvedere
+    - conditions:
+      - condition: trigger
+        id: rosie
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.sweeper_out_of_service_rosie
+          state: 'on'
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: true
+          target:
+            entity_id: automation.sweeper_schedule_rosie
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.sweeper_out_of_service_rosie
+            state: 'off'
+          then:
+          - service: automation.turn_on
+            data: {}
+            target:
+              entity_id: automation.sweeper_schedule_rosie
+    - conditions:
+      - condition: trigger
+        id: visitors
+      sequence:
+      - if:
+        - condition: state
+          entity_id: switch.visitors
+          state: 'on'
+        then:
+        - service: input_boolean.turn_on
+          data: {}
+          target:
+            entity_id:
+            - input_boolean.sweeper_out_of_service_alice
+            - input_boolean.sweeper_out_of_service_benson
+        else:
+        - if:
+          - condition: state
+            entity_id: switch.visitors
+            state: 'off'
+          then:
+          - service: input_boolean.turn_off
+            data: {}
+            target:
+              entity_id:
+              - input_boolean.sweeper_out_of_service_alice
+              - input_boolean.sweeper_out_of_service_benson
+  mode: single
+- id: '1678150791029'
+  alias: Sweeper Schedule Benson
+  description: Run Benson according to schedule time
+  trigger:
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_benson'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_benson'', ''minute''))
+      }}'
+    id: start
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_benson'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_benson'', ''minute'')
+      + 30) }}'
+    id: stop
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: start
+      sequence:
+      - service: vacuum.start
+        data: {}
+        target:
+          entity_id:
+          - vacuum.benson
+    - conditions:
+      - condition: trigger
+        id: stop
+      sequence:
+      - service: vacuum.return_to_base
+        data: {}
+        target:
+          entity_id:
+          - vacuum.benson
+  mode: single
+- id: '1678151282756'
+  alias: Sweeper Schedule Lurch
+  description: Run Lurch according to schedule time
+  trigger:
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_lurch'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_lurch'', ''minute''))
+      }}'
+    id: start
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_lurch'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_lurch'', ''minute'')
+      + 30) }}'
+    id: stop
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: start
+      sequence:
+      - service: vacuum.start
+        data: {}
+        target:
+          entity_id:
+          - vacuum.lurch
+    - conditions:
+      - condition: trigger
+        id: stop
+      sequence:
+      - if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: vacuum.lurch
+            state: docked
+        then:
+        - service: vacuum.return_to_base
+          data: {}
+          target:
+            device_id: 642c902db590aa21f71b69497f0ee024
+  mode: single
+- id: '1678151659675'
+  alias: Sweeper Schedule Mister Belvedere
+  description: Run Mister Belvedere according to schedule time
+  trigger:
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_mister_belvedere'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_mister_belvedere'',
+      ''minute'')) }}'
+    id: start
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_mister_belvedere'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_mister_belvedere'',
+      ''minute'') + 30) }}'
+    id: stop
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: start
+      sequence:
+      - service: vacuum.start
+        data: {}
+        target:
+          entity_id:
+          - vacuum.mister_belvedere
+    - conditions:
+      - condition: trigger
+        id: stop
+      sequence:
+      - service: vacuum.return_to_base
+        data: {}
+        target:
+          entity_id:
+          - vacuum.mister_belvedere
+  mode: single
+- id: '1678201858276'
+  alias: Sweeper Schedule Rosie
+  description: sweep floor and zone according to schedule for upstairs
+  trigger:
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_rosie'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_rosie'', ''minute''))
+      }}'
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_time_rosie'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_rosie'', ''minute'')
+      + 240) }}'
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: input_boolean.sweep_zone_office
+      state: 'on'
+    then:
+    - service: media_player.play_media
+      data:
+        media_content_id: clean office
+        media_content_type: routine
+      target:
+        entity_id: media_player.master_echo
+    - service: input_boolean.toggle
+      data: {}
+      target:
+        entity_id: input_boolean.sweep_zone_office
+    else:
+    - service: media_player.play_media
+      data:
+        media_content_id: clean master bedroom
+        media_content_type: routine
+      target:
+        entity_id: media_player.master_echo
+    - service: input_boolean.toggle
+      data: {}
+      target:
+        entity_id: input_boolean.sweep_zone_office
+  mode: single
+- id: '1678402955371'
+  alias: Washer Running
+  description: turn on/off helper boolean for washng machine
+  trigger:
+  - type: power
+    platform: device
+    device_id: f4f40f8493b5a0c78dca7a00d6f210be
+    entity_id: sensor.zooz_washer_switch_power_meter
+    domain: sensor
+    above: 1
+    id: 'on'
+  - type: power
+    platform: device
+    device_id: f4f40f8493b5a0c78dca7a00d6f210be
+    entity_id: sensor.zooz_washer_switch_power_meter
+    domain: sensor
+    below: 0.5
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+    id: 'off'
+  - platform: state
+    entity_id:
+    - sensor.washer_vibration_sensor_action
+    attribute: action
+    to: tilt
+    id: tilt
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id:
+          - input_boolean.washer_running
+          - input_boolean.washer_loaded
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.washer_running
+    - conditions:
+      - condition: trigger
+        id: tilt
+      sequence:
+      - if:
+        - type: is_power
+          condition: device
+          device_id: f4f40f8493b5a0c78dca7a00d6f210be
+          entity_id: sensor.zooz_washer_switch_power_meter
+          domain: sensor
+          below: 1
+        then:
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.washer_loaded
+  mode: single
+- id: '1678994816045'
+  alias: Morning Briefing Mark
+  description: give morning report and status of sweepers
+  trigger:
+  - platform: state
+    entity_id:
+    - switch.upstairs_coffee_plug
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  condition: []
+  action:
+  - service: script.morning_briefing_mark
+    data: {}
+  mode: single
+- id: '1679239750007'
+  alias: Birthday Reminder Text
+  description: send text with upcoming birthday list
+  trigger:
+  - platform: template
+    value_template: '{{ (now().day == 1) and ((now().hour * 60) + (now().minute) ==
+      840) }}'
+  - platform: template
+    value_template: '{{ (now().day == 15) and ((now().hour * 60) + (now().minute)
+      == 840) }}'
+  condition: []
+  action:
+  - service: script.birthday_text_holly
+    data: {}
+  mode: single
+- id: '1679407893356'
+  alias: Coffee Pot Timers
+  description: turn off coffee pots after certain amount of time for safety
+  trigger:
+  - platform: state
+    entity_id:
+    - switch.basement_coffee_plug
+    to: 'on'
+    id: basement on
+  - platform: state
+    entity_id:
+    - switch.upstairs_coffee_plug
+    to: 'on'
+    id: upstairs on
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.basement_coffee_timer
+    id: basement off
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.upstairs_coffee_timer
+    id: upstairs off
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: basement on
+      sequence:
+      - service: timer.start
+        data: {}
+        target:
+          entity_id: timer.basement_coffee_timer
+    - conditions:
+      - condition: trigger
+        id: upstairs on
+      sequence:
+      - service: timer.start
+        data: {}
+        target:
+          entity_id: timer.upstairs_coffee_timer
+    - conditions:
+      - condition: trigger
+        id: basement off
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.basement_coffee_plug
+    - conditions:
+      - condition: trigger
+        id: upstairs off
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.upstairs_coffee_plug
+  mode: single
+- id: '1679491406501'
+  alias: Appliance Cabinet Light Manual Override
+  description: override cabinset sensor when light is manually turned on or off
+  trigger:
+  - platform: state
+    entity_id:
+    - light.hallway
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+    id: manual off
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: manual off
+      sequence:
+      - service: automation.turn_on
+        data: {}
+        target:
+          entity_id: automation.appliance_cabinet_light
+  mode: single
+- id: '1679503390509'
+  alias: Upstairs Staircase Motion Manual Override
+  description: override motion sensor when manually turning lights on or off
+  trigger:
+  - platform: state
+    entity_id:
+    - light.upstairs_office
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+    id: manual switch off
+  - platform: state
+    entity_id:
+    - light.upstairs_office
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
+    id: manual switch on
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: manual switch off
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.upstairs_office_light_status
+      - if:
+        - condition: state
+          entity_id: automation.upstairs_staircase_motion_lights
+          state: 'off'
+        then:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.upstairs_staircase_motion_lights
+    - conditions:
+      - condition: trigger
+        id: manual switch on
+      sequence:
+      - if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: binary_sensor.upstairs_staircase_motion_sensor_occupancy
+            state: 'on'
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: true
+          target:
+            entity_id: automation.upstairs_staircase_motion_lights
+  mode: single
+- id: '1679505555393'
+  alias: HVAC Fan Assist
+  description: turn on ceiling fans and box fans and vent fans to help with circulation
+  trigger:
+  - platform: template
+    value_template: '{{ (state_attr(''climate.house'',''hvac_action'') != ''idle'')
+      and (state_attr(''climate.house'',''hvac_action'') != ''off'') }}'
+    id: fan on
+  - platform: template
+    value_template: '{{ (state_attr(''climate.house'',''hvac_action'') == ''idle'')
+      or (state_attr(''climate.house'',''hvac_action'') == ''off'') }}'
+    id: fan off
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: fan on
+      sequence:
+      - if:
+        - condition: state
+          entity_id: fan.family_fan
+          state: 'on'
+        then:
+        - service: input_boolean.turn_on
+          data: {}
+          target:
+            entity_id: input_boolean.fan_helper_family
+        else:
+        - service: fan.set_percentage
+          data:
+            percentage: 33
+          target:
+            entity_id: fan.family_fan
+      - if:
+        - condition: state
+          entity_id: fan.master_fan
+          state: 'on'
+        then:
+        - service: input_boolean.turn_on
+          data: {}
+          target:
+            entity_id: input_boolean.fan_helper_master
+        else:
+        - service: fan.set_percentage
+          data:
+            percentage: 33
+          target:
+            entity_id: fan.master_fan
+      - if:
+        - condition: state
+          entity_id: switch.box_fan_plug
+          state: 'on'
+        then:
+        - service: input_boolean.turn_on
+          data: {}
+          target:
+            entity_id: input_boolean.fan_helper_box
+        else:
+        - service: switch.turn_on
+          data: {}
+          target:
+            entity_id: switch.box_fan_plug
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.vent_fan_plug
+    - conditions:
+      - condition: trigger
+        id: fan off
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.fan_helper_box
+          state: 'on'
+        then:
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.fan_helper_box
+        else:
+        - service: switch.turn_off
+          data: {}
+          target:
+            entity_id: switch.box_fan_plug
+      - if:
+        - condition: state
+          entity_id: input_boolean.fan_helper_family
+          state: 'on'
+        then:
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.fan_helper_family
+        else:
+        - service: fan.turn_off
+          data: {}
+          target:
+            entity_id: fan.family_fan
+      - if:
+        - condition: state
+          entity_id: input_boolean.fan_helper_master
+          state: 'on'
+        then:
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.fan_helper_master
+        else:
+        - service: fan.turn_off
+          data: {}
+          target:
+            entity_id: fan.master_fan
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.vent_fan_plug
+  mode: single
+- id: '1679508958053'
+  alias: Mail Reminder Announcement
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.breezeway_motion_sensor_motion
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 15
+  condition:
+  - condition: time
+    after: 06:00:00
+    before: '16:00:00'
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+  action:
+  - if:
+    - condition: state
+      entity_id: input_boolean.mail_reminder
+      state: 'on'
+    then:
+    - service: notify.alexa_media_portable_echo
+      data:
+        message: Please take the mail with you!
+        data:
+          type: tts
+  mode: single
+- id: '1679681582131'
+  alias: House Occuppancy
+  description: turn things on and off when house is occupied or not occupied.
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.house_occuppied
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    id: away
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.sweeper_away_timer
+    id: timer finished
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: away
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.whole_house
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id:
+          - switch.wall_left_plug
+          - switch.wall_right_plug
+          - switch.basement_counter_plug
+          - switch.basement_coffee_plug
+          - switch.upstairs_coffee_plug
+          - switch.basement_sink_switch
+      - if:
+        - condition: state
+          entity_id: input_boolean.sweeper_out_of_service_alice
+          state: 'off'
+        then:
+        - service: vacuum.start
+          data: {}
+          target:
+            entity_id: vacuum.alice
+      - if:
+        - condition: state
+          entity_id: input_boolean.sweeper_out_of_service_benson
+          state: 'off'
+        then:
+        - service: vacuum.start
+          data: {}
+          target:
+            entity_id: vacuum.benson
+      - if:
+        - condition: state
+          entity_id: input_boolean.sweeper_out_of_service_lurch
+          state: 'off'
+        then:
+        - service: vacuum.start
+          data: {}
+          target:
+            entity_id: vacuum.lurch
+      - if:
+        - condition: state
+          entity_id: input_boolean.sweeper_out_of_service_mister_belvedere
+          state: 'off'
+        then:
+        - service: vacuum.start
+          data: {}
+          target:
+            entity_id: vacuum.mister_belvedere
+      - if:
+        - condition: state
+          state: 'off'
+          entity_id: input_boolean.sweeper_out_of_service_rosie
+        then:
+        - if:
+          - condition: state
+            entity_id: input_boolean.sweep_zone_office
+            state: 'on'
+          then:
+          - service: media_player.play_media
+            data:
+              media_content_id: clean office
+              media_content_type: routine
+            target:
+              entity_id: media_player.master_echo
+          - service: input_boolean.toggle
+            data: {}
+            target:
+              entity_id: input_boolean.sweep_zone_office
+          else:
+          - service: media_player.play_media
+            data:
+              media_content_id: clean master bedroom
+              media_content_type: routine
+            target:
+              entity_id: media_player.master_echo
+          - service: input_boolean.toggle
+            data: {}
+            target:
+              entity_id: input_boolean.sweep_zone_office
+      - if:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: vacuum.alice
+            state: cleaning
+          - condition: state
+            entity_id: vacuum.benson
+            state: cleaning
+          - condition: state
+            entity_id: vacuum.lurch
+            state: cleaning
+          - condition: state
+            entity_id: vacuum.mister_belvedere
+            state: cleaning
+        then:
+        - service: timer.start
+          data: {}
+          target:
+            entity_id: timer.sweeper_away_timer
+    - conditions:
+      - condition: trigger
+        id: timer finished
+      sequence:
+      - service: vacuum.return_to_base
+        data: {}
+        target:
+          entity_id:
+          - vacuum.alice
+          - vacuum.benson
+          - vacuum.lurch
+          - vacuum.mister_belvedere
+  mode: single
+- id: '1679698078626'
+  alias: test timer
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_number.second_alexa_timer
+  condition: []
+  action:
+  - service: media_player.play_media
+    data:
+      media_content_type: custom
+      media_content_id: set a timer for {{ states('input_number.second_alexa_timer')|round()
+        }} minutes.
+    target:
+      entity_id: media_player.family_echo
+  mode: single
+- id: '1679750160033'
+  alias: sweeper clean group
+  description: change clean sweeper on group change
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.clean_alice
+    - input_boolean.clean_benson
+    - input_boolean.clean_lurch
+    - input_boolean.clean_mr_belvedere
+    - input_boolean.clean_rosie
+    to: 'on'
+    id: 'on'
+  - platform: state
+    entity_id:
+    - input_boolean.clean_alice
+    - input_boolean.clean_benson
+    - input_boolean.clean_mr_belvedere
+    - input_boolean.clean_lurch
+    - input_boolean.clean_rosie
+    to: 'off'
+    id: 'off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.clean_sweepers
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - if:
+        - condition: and
+          conditions:
+          - condition: state
+            entity_id: input_boolean.clean_alice
+            state: 'off'
+          - condition: state
+            entity_id: input_boolean.clean_benson
+            state: 'off'
+          - condition: state
+            entity_id: input_boolean.clean_lurch
+            state: 'off'
+          - condition: state
+            entity_id: input_boolean.clean_mr_belvedere
+            state: 'off'
+          - condition: state
+            entity_id: input_boolean.clean_rosie
+            state: 'off'
+        then:
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.clean_sweepers
+  mode: single
+- id: '1679840542188'
+  alias: Mount Folder
+  description: ''
+  trigger:
+  - platform: homeassistant
+    event: start
+  condition: []
+  action:
+  - service: shell_command.mount_nas_folder
+    data: {}
+  mode: single
+- id: '1679842157772'
+  alias: gitHub update
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{ (now().hour == 11) and (now().weekday() == 6) }}'
+  condition: []
+  action:
+  - service: shell_command.pushupdates_to_github
+    data: {}
   mode: single
