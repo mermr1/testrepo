@@ -448,6 +448,17 @@
       {% endif %}
       {{ templow }}
 
+  - name: start_work_condition
+    unique_id: b38dee73-f4eb-4914-b046-c127827b63ea
+    state: >
+      {{ state_attr('weather.firestone_house_hourly','forecast')[11].condition }}
+
+  - name: end_work_condition
+    unique_id: 0f349ea4-1444-401e-87e8-a1b9f9918f5f
+    state: >
+      {{ state_attr('weather.firestone_house_hourly','forecast')[20].condition }}
+
+
 # set hvac status for easier automations
   - name: hvac_status
     unique_id: d9e26973-d993-4a05-a46a-489cedf05d2c

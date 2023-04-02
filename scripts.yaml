@@ -875,22 +875,25 @@ morning_briefing_mark:
       data:
         type: tts
       message: "{% macro Salutations() %} {{ [ 'Have a nice day!', 'Have a wonderful
-        time!', 'Today is going to be a good day!' ] | random }} {% endmacro %}\n{%
-        macro NationalHoliday() %} {# National Holiday Announcememnt #} {% set holiday
-        = state_attr('calendar.natdaycal_com_national_day_calendar', 'message') |
-        capitalize %} {%- if 'National' in holiday -%} {{ ['Today is also known as
-        ', 'Today we are also celebrating '] | random }} {{ state_attr('calendar.natdaycal_com_national_day_calendar',
-        'message') | replace('&',' and ') }}.   {% if 'artichoke' in holiday %} {{
-        ['Artichokes should not have a national holiday.  ',\n  'EEEWWWW! artichokes
-        are nasty!  ', 'How did artichokes get a holiday.  '] | random }}\n{% endif
-        %} {# add here for next holiday comment #} {% else %} Happy {{ holiday }}.
-        \ {% if 'fools' in holiday %} {{ ['Which reminds me. The camera looking at
-        the drive way caught a Tee Rex last night. <break time=\"1s\"/> April Fools!',\n
-        \   'Which reminds me. I won the lottery and I am moving out to go live with
-        Siri. <break time=\"1s\"/> April Fools!',\n    'Which reminds me. there was
-        a time change last night. We have jumped 15 years into the future. <break
-        time=\"1s\"/> April Fools!'\n    ]|random }}\n{% endif %}{%- endif -%} {%
-        endmacro %}\n{# chore list #} {% macro choreList() %}\n  {% if is_state('input_boolean.clean_sweepers','on')
+        time!', 'Today is going to be a good day!' ] | random }} {% endmacro %}\n{#
+        National Holiday Announcememnt #} {% macro NationalHoliday() %}\n  {%- if
+        state_attr('calendar.natdaycal_com_national_day_calendar','message') -%}\n
+        \   {% set holiday = state_attr('calendar.natdaycal_com_national_day_calendar','message')
+        | capitalize %}\n      {% if 'National' in holiday %}\n        {{ ['Today
+        is also known as ','Today we are also celebrating '] | random }}\n        {{
+        state_attr('calendar.natdaycal_com_national_day_calendar', 'message') | replace('&','
+        and ') }}.  \n        {% if 'artichoke' in holiday %}\n        {{ ['Artichokes
+        should not have a national holiday.  ','EEEWWWW! artichokes are nasty!  ','How
+        did artichokes get a holiday.  '] | random }}\n      {% endif %}\n        {#
+        add here for next holiday comment #}\n      {% else %}\n        Happy {{ holiday
+        }}.  \n        {% if 'fools' in holiday %}\n          {{ ['Which reminds me.
+        The camera looking at the drive way caught a Tee Rex last night. <break time=\"1s\"/>April
+        Fools!',\n              'Which reminds me. I won the lottery and I am moving
+        out to go live with Siri. <break time=\"1s\"/> April Fools!',\n              'Which
+        reminds me. there was a time change last night. We have jumped 15 years into
+        the future. <break time=\"1s\"/> April Fools!'\n              ]|random }}\n
+        \       {% endif %}\n      {% endif %}\n  {%- endif -%}\n{% endmacro %}\n{#
+        chore list #} {% macro choreList() %}\n  {% if is_state('input_boolean.clean_sweepers','on')
         %}\n  {{ ['Time to clean the sweepers.  ',\n    'Sweepers need to be cleaned
         today.  ',\n    'Today is the day to do sweeper maintenance.  '\n    ] | random
         }}\n  {% endif %}\n  {% if is_state('input_boolean.water_fountain_change','on')
@@ -919,7 +922,23 @@ morning_briefing_mark:
         %}\n    {{ ['Time to clean the ceiling fans again.  ',\n      'Hey, do you
         think you should clean the ceiling fans?  ',\n      'You should see all the
         dirt the ceiling fans throw arround.  '\n      ] | random }}\n    {% endif
-        %}\n{% endmacro %}\n\n{% macro DateAndTime() %} Today is {{ ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']\n
+        %}\n{% endmacro %}\n{% macro appAnnouncement() %}\n  {%- if state_attr('calendar.mrosshomeassist_gmail_com','message')
+        %}\n    {% set app_date = (state_attr('calendar.mrosshomeassist_gmail_com','start_time').split('
+        ') [0]) %}\n    {% set app_year = app_date.split('-') [0] %}\n    {% set app_month
+        = app_date.split('-') [1] %}\n    {% set app_day = app_date.split('-') [2]
+        %}\n    {% set app_time = state_attr('calendar.mrosshomeassist_gmail_com','start_time').split('
+        ') [1] %}\n    {% set app_time_hour = app_time.split(':') [0] %}\n    {% set
+        app_time_minute = app_time.split(':') [1] %}\n    {% if app_time_hour|int
+        >=12 %}\n      {% set apptime = (app_time_hour|int - 12) ~ ':' ~ app_time_minute
+        ~ ' pm.' %}\n    {% elif app_time_hour|int < 12 %}\n      {% set apptime =
+        app_time_hour|int ~ ':' ~ app_time_minute ~ ' am.' %}\n    {% elif app_time_hour|int
+        == 0 %}\n      {% set apptime = '12:' ~ app_time_minute ~ ' am.' %}\n    {%
+        endif %}\n    {% if (now().year == app_year|int) and (now().month == app_month|int)
+        and (now().day == app_day|int) %}\n      {% if ((state_attr('calendar.mrosshomeassist_gmail_com','message').split('
+        ') [0]) == 'Dr') %}\n      {% set doctor = state_attr('calendar.mrosshomeassist_gmail_com','message')
+        %}\n      {% set phrase = 'You have an appointment with ' ~ doctor ~ ' at
+        ' ~ apptime %}\n      {{ phrase }}\n      {% endif %}\n    {% endif %}\n  {%-
+        endif %}\n{% endmacro %}\n{% macro DateAndTime() %} Today is {{ ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']\n
         \ [now().weekday()] }}, {{ as_timestamp(now()) | timestamp_custom('%B %d %Y')
         }}.\nIt is {{ now().strftime(\"%I:%M %p\") }}. {% endmacro %}\n{% macro weatherReport()
         %} Today the weather will be {{ states('weather.firestone_house', 'state')
@@ -974,10 +993,10 @@ morning_briefing_mark:
         \ if item | trim != \"\" -%}\n    {{ item | trim }} {% endfor -%}\n{%- endmacro
         -%}\n{# a macro to call all macros :)  #} {%- macro mother_of_all_macros()
         -%}\n  {{ briefingGreeting() }}  Mark.\n  {{ DateAndTime() }}\n  {{ NationalHoliday()
-        }}\n  {{ weatherReport() }}\n  {{ BirthCount() }}\n  {{ birthdayAnnouncement()
-        }}\n  {{ getSweepers() }}<break time=\"1s\"/>\n  {{ choreList() }}<break time=\"1s\"/>\n
-        \ {{ Salutations() }}\n{%- endmacro -%}\n\n  {# Call the macro  #}\n{{- cleanup(mother_of_all_macros())
-        -}}"
+        }}\n  {{ weatherReport() }}\n  {#{{ appAnnouncement() }}#}\n  {{ BirthCount()
+        }}\n  {{ birthdayAnnouncement() }}\n  {{ getSweepers() }}<break time=\"1s\"/>\n
+        \ {{ choreList() }}<break time=\"1s\"/>\n  {{ Salutations() }}\n{%- endmacro
+        -%}\n\n  {# Call the macro  #}\n{{- cleanup(mother_of_all_macros()) -}}"
   mode: single
 sweeper_announcement:
   alias: Sweeper Announcement
@@ -1018,56 +1037,58 @@ morning_briefing_holly:
         }}.\nIt is {{ now().strftime(\"%I:%M %p\") }}. {% endmacro %}\n{% macro mailNotify()
         %}\n  {% if (states('input_boolean.mail_reminder','state') == 'on') and (now().weekday()
         != 6) %}\n    Remember to take the mail to the post office today.\n  {% endif
-        %}\n{% endmacro %}\n{% macro weatherReport() %} Today the weather will be
-        {{ states('weather.firestone_house', 'state') }} with  a high of {{ states('sensor.hightemp',
-        'state') }} and a low of  {{ states('sensor.lowtemp', 'state') }} degrees.
-        {% endmacro %}\n{% macro birthdayAnnouncement() %} {% set bday = ['sensor.bday0',
-        'sensor.bday1', 'sensor.bday2', 'sensor.bday3', \n  'sensor.bday4', 'sensor.bday5',
-        'sensor.bday6', 'sensor.bday7', \n  'sensor.bday8', 'sensor.bday9'] %}\n{%
-        set bmonth = ['sensor.bmonth0', 'sensor.bmonth1', 'sensor.bmonth2',\n  'sensor.bmonth3',
-        'sensor.bmonth4', 'sensor.bmonth5', 'sensor.bmonth6',\n  'sensor.bmonth7',
-        'sensor.bmonth8', 'sensor.bmonth9'] %}\n{% set fname = ['sensor.fname0', 'sensor.fname1',
-        'sensor.fname2', 'sensor.fname3',\n  'sensor.fname4', 'sensor.fname5', 'sensor.fname6',
-        'sensor.fname7',\n  'sensor.fname8', 'sensor.fname9'] %}\n{% set age = ['sensor.age0',
-        'sensor.age1', 'sensor.age2', 'sensor.age3', 'sensor.age4',\n  'sensor.age5',
-        'sensor.age6', 'sensor.age7', 'sensor.age8', 'sensor.age9'] %}\n{% for i in
-        range (10) %} {%- if (states(bmonth[i], 'state')|int) == now().month %} {%
-        if (states(bday[i], 'state')|int) == now().day %} {{ states(fname[i], 'state')
-        }} is going to be {{ states(age[i], 'state') }} years old. {% endif %} {%
-        endif -%} {% endfor %} {% endmacro %}\n{%- macro briefingGreeting() -%} {%
-        set time = now().hour %} {% if (time >= 17) %}\n  Good Evening.\n{% elif (time
-        >= 12) %}\n  Good Afternoon.\n{% elif (time >= 4) %}\n  Good Morning.\n{%
-        else %}\n  Hello.\n{% endif %} {% endmacro %}\n{% macro BirthCount() %} {%
-        set count = 0 %} {% if states('sensor.bmonth0', 'state')|int == now().month
-        and \n  states('sensor.bday0', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if states('sensor.bmonth1', 'state')|int == now().month
-        and \n  states('sensor.bday1', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if states('sensor.bmonth2', 'state')|int == now().month
-        and \n  states('sensor.bday2', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if states('sensor.bmonth3', 'state')|int == now().month
-        and \n  states('sensor.bday3', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if states('sensor.bmonth4', 'state')|int == now().month
-        and \n  states('sensor.bday4', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if states('sensor.bmonth5', 'state')|int == now().month
-        and \n  states('sensor.bday5', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if states('sensor.bmonth6', 'state')|int == now().month
-        and \n  states('sensor.bday6', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if states('sensor.bmonth7', 'state')|int == now().month
-        and \n  states('sensor.bday7', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if states('sensor.bmonth8', 'state')|int == now().month
-        and \n  states('sensor.bday8', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if states('sensor.bmonth9', 'state')|int == now().month
-        and \n  states('sensor.bday9', 'state')|int == now().day %}\n{% set count=
-        count + 1 %} {% endif %} {% if count >= 1 %} You have {{ count }} birthdays
-        today. {% endif %} {% endmacro %}\n\n{% macro getSweepers() %} {% set count
-        = (states.vacuum | selectattr('state', '!=', 'docked') | list | length ) %}
-        {% if count > 0 %} You have {{ count }} sweepers missing.   This is who is
-        missing.   {% for state in states.vacuum | selectattr('state', '!=', 'docked')
-        %}  {{ state_attr(state.entity_id, 'friendly_name') }}.    {% endfor %} {%
-        else %} {{ [ 'All the good little robots are charging.  ', 'No sweepers mising',
-        'Everyone is on  there dock.  ' ] | random }} {% endif %} {% endmacro %}\n{#
-        a macro that removes all newline characters, empty spaces, and returns formatted
-        text #}  {%- macro cleanup(data) -%}\n  {%- for item in data.split(\"\\n\")
+        %}\n{% endmacro %}\n{% macro weatherReport() %}\n  Today the weather will
+        be {{ states('weather.firestone_house', 'state') }}\n  with  a high of {{
+        states('sensor.hightemp', 'state') }} \n  and a low of  {{ states('sensor.lowtemp',
+        'state') }} degrees.\n  Right now it is {{ states('sensor.start_work_condition','state')
+        }}\n  and will be {{ states('sensor.end_work_condition','state') }} \n  when
+        you get out of work.\n{% endmacro %}\n{% macro birthdayAnnouncement() %} {%
+        set bday = ['sensor.bday0', 'sensor.bday1', 'sensor.bday2', 'sensor.bday3',
+        \n  'sensor.bday4', 'sensor.bday5', 'sensor.bday6', 'sensor.bday7', \n  'sensor.bday8',
+        'sensor.bday9'] %}\n{% set bmonth = ['sensor.bmonth0', 'sensor.bmonth1', 'sensor.bmonth2',\n
+        \ 'sensor.bmonth3', 'sensor.bmonth4', 'sensor.bmonth5', 'sensor.bmonth6',\n
+        \ 'sensor.bmonth7', 'sensor.bmonth8', 'sensor.bmonth9'] %}\n{% set fname =
+        ['sensor.fname0', 'sensor.fname1', 'sensor.fname2', 'sensor.fname3',\n  'sensor.fname4',
+        'sensor.fname5', 'sensor.fname6', 'sensor.fname7',\n  'sensor.fname8', 'sensor.fname9']
+        %}\n{% set age = ['sensor.age0', 'sensor.age1', 'sensor.age2', 'sensor.age3',
+        'sensor.age4',\n  'sensor.age5', 'sensor.age6', 'sensor.age7', 'sensor.age8',
+        'sensor.age9'] %}\n{% for i in range (10) %} {%- if (states(bmonth[i], 'state')|int)
+        == now().month %} {% if (states(bday[i], 'state')|int) == now().day %} {{
+        states(fname[i], 'state') }} is going to be {{ states(age[i], 'state') }}
+        years old. {% endif %} {% endif -%} {% endfor %} {% endmacro %}\n{%- macro
+        briefingGreeting() -%} {% set time = now().hour %} {% if (time >= 17) %}\n
+        \ Good Evening.\n{% elif (time >= 12) %}\n  Good Afternoon.\n{% elif (time
+        >= 4) %}\n  Good Morning.\n{% else %}\n  Hello.\n{% endif %} {% endmacro %}\n{%
+        macro BirthCount() %} {% set count = 0 %} {% if states('sensor.bmonth0', 'state')|int
+        == now().month and \n  states('sensor.bday0', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if states('sensor.bmonth1', 'state')|int
+        == now().month and \n  states('sensor.bday1', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if states('sensor.bmonth2', 'state')|int
+        == now().month and \n  states('sensor.bday2', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if states('sensor.bmonth3', 'state')|int
+        == now().month and \n  states('sensor.bday3', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if states('sensor.bmonth4', 'state')|int
+        == now().month and \n  states('sensor.bday4', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if states('sensor.bmonth5', 'state')|int
+        == now().month and \n  states('sensor.bday5', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if states('sensor.bmonth6', 'state')|int
+        == now().month and \n  states('sensor.bday6', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if states('sensor.bmonth7', 'state')|int
+        == now().month and \n  states('sensor.bday7', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if states('sensor.bmonth8', 'state')|int
+        == now().month and \n  states('sensor.bday8', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if states('sensor.bmonth9', 'state')|int
+        == now().month and \n  states('sensor.bday9', 'state')|int == now().day %}\n{%
+        set count= count + 1 %} {% endif %} {% if count >= 1 %} You have {{ count
+        }} birthdays today. {% endif %} {% endmacro %}\n\n{% macro getSweepers() %}
+        {% set count = (states.vacuum | selectattr('state', '!=', 'docked') | list
+        | length ) %} {% if count > 0 %} You have {{ count }} sweepers missing.   This
+        is who is missing.   {% for state in states.vacuum | selectattr('state', '!=',
+        'docked') %}  {{ state_attr(state.entity_id, 'friendly_name') }}.    {% endfor
+        %} {% else %} {{ [ 'All the good little robots are charging.  ', 'No sweepers
+        mising', 'Everyone is on  there dock.  ' ] | random }} {% endif %} {% endmacro
+        %}\n{# a macro that removes all newline characters, empty spaces, and returns
+        formatted text #}  {%- macro cleanup(data) -%}\n  {%- for item in data.split(\"\\n\")
         \ if item | trim != \"\" -%}\n    {{ item | trim }} {% endfor -%}\n{%- endmacro
         -%}\n{# a macro to call all macros :)  #} {%- macro mother_of_all_macros()
         -%}\n  {{ briefingGreeting() }}\n  {{ weatherReport() }}\n  {{ birthdayAnnouncement()
@@ -1383,4 +1404,80 @@ test_stairs_light:
         data: {}
         target:
           entity_id: light.upstairs_office
+  mode: single
+sweeper_rosie:
+  alias: Sweeper Rosie
+  sequence:
+  - if:
+    - condition: state
+      entity_id: input_boolean.sweep_zone_office
+      state: 'on'
+    then:
+    - service: media_player.play_media
+      data:
+        media_content_id: clean office
+        media_content_type: routine
+      target:
+        entity_id: media_player.master_echo
+    - service: input_boolean.toggle
+      data: {}
+      target:
+        entity_id: input_boolean.sweep_zone_office
+    else:
+    - service: media_player.play_media
+      data:
+        media_content_id: clean master bedroom
+        media_content_type: routine
+      target:
+        entity_id: media_player.master_echo
+    - service: input_boolean.toggle
+      data: {}
+      target:
+        entity_id: input_boolean.sweep_zone_office
+  mode: single
+chore_list:
+  alias: Chore List
+  sequence:
+  - service: notify.alexa_media_last_called
+    data:
+      data:
+        type: tts
+      message: '{# chore list #}  {% macro choreList() %}   {% if is_state(''input_boolean.clean_sweepers'',''on'')
+        %}   {{ [''Time to clean the sweepers.  '',     ''Sweepers need to be cleaned
+        today.  '',     ''Today is the day to do sweeper maintenance.  ''     ] |
+        random }}   {% endif %}   {% if is_state(''input_boolean.water_fountain_change'',''on'')
+        %}   {{ [''Time to change the water in the cat fountain.  '',     ''The cats
+        would like fresh water today.  '',     ''Fountain water needs changed before
+        it grows algae.  ''     ] | random }}   {% endif %}   {% if is_state(''input_boolean.water_fountain_clean'',''on'')
+        %}   {{ [''The cat fountain needs cleaned, washed, and descaled.  '',     ''Today
+        is the day to wash the cat fountain.  '',     ''Clean out and was the cats
+        water fountain.  ''     ] | random }}   {% endif %}   {% if is_state(''input_boolean.sweep_furniture'',''on'')
+        %}   {{ [''Time to sweep off the furniture.  '',     ''The chair and living
+        room furniture need swept today.  '',     ''Sweep the chair, love seat, and
+        two futons.  ''     ] | random }}   {% endif %}   {% if is_state(''input_boolean.clean_steps'',''on'')
+        %}   {{ [''The steps need swept today.  '',     ''Time to sweep the steps
+        again!  '',     ''Sure hope you feel like sweeping the steps today.  ''     ]
+        | random }}   {% endif %}   {% if is_state(''input_boolean.clean_green_bathroom'',''on'')
+        %}   {{ [''Time to clean the ugly green bathroom and make it pretty again.  '',     ''The
+        green bathroom needs to be cleaned today.  '',     ''That seventies bathroom
+        needs updated, or just cleaned.  ''     ] | random }}   {% endif %}   {% if
+        is_state(''input_boolean.clean_master_bathroom'',''on'') %}   {{ [''Upstairs
+        bathroom needs cleaned.  '',     ''How about you clean the master bathroom
+        today.  '',     ''Holly would like to have her bathroom cleaned.  ''     ]
+        | random }}     {% endif %}     {% if is_state(''input_boolean.dust_house'',''on'')
+        %}     {{ [''I can write my name in the dust because it is so thick.  '',       ''How
+        about you do some dusting today.  '',       ''The house is getting pretty
+        dusty.  ''       ] | random }}     {% endif %}     {% if is_state(''input_boolean.clean_ceiling_fans'',''on'')
+        %}     {{ [''Time to clean the ceiling fans again.  '',       ''Hey, do you
+        think you should clean the ceiling fans?  '',       ''You should see all the
+        dirt the ceiling fans throw arround.  ''       ] | random }}     {% endif
+        %}     {% if is_state(''input_boolean.trash_cans'',''on'') %}     {{ [''Remember
+        to take trash to the curb for pickup.  '',       ''Smells like garbage, must
+        be trash day.  '',       ''Trash day, about time, it was getting ripe.  ''       ]
+        | random }}     {% endif %} {% endmacro %}  {# a macro that removes  empty
+        spaces, and returns formatted text #}  {%- macro cleanup(data) -%}   {%- for
+        item in data.split("\n")  if item | trim != "" -%}     {{ item | trim }}  {%
+        endfor -%} {%- endmacro -%}  {# a macro to call all macros :)  #} {%- macro
+        mother_of_all_macros() -%}   {{ choreList() }} {%- endmacro -%}    {# Call
+        the macro  #} {{- cleanup(mother_of_all_macros()) -}}'
   mode: single

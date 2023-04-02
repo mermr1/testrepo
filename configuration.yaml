@@ -10,13 +10,14 @@ http:
 # server host to listen only ipv4 kill ipv6
 #  server_host: 192.168.68.10
 # IP BAN
+#  ip_ban_enabled: true
+#  login_attempts_threshold: 3
 
 homeassistant:
 #  external_url: !secret externalurl
 #  internal_url: !secret internalurl
 
-# cloud:
-# [when use says invalid python ocnfig  **python_script:
+cloud:
 
 # mobile_app:
 
@@ -61,6 +62,4 @@ withings:
 # For mounting SMB Network media
 # Note - if the mount doesn't work, substitute vers=3.0 with  vers=1.0 or vers=2.1
 shell_command:
-  mount_nas_folder: mkdir -p /media/nasfiles;mount -t cifs -o vers=3.0,noserverino,username=mermr1,password=hollyb76,domain=WORKGROUP //192.168.1.100/public /media/nasfiles
-
   pushupdates_to_github: /bin/bash pushupdates.sh
