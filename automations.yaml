@@ -50,6 +50,10 @@
         device_id: fff1787a9e7a855b257b1b8cece4c160
         entity_id: remote.32_tcl_roku_tv
         domain: remote
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.dell_power
     - conditions:
       - condition: trigger
         id: light off
@@ -67,6 +71,10 @@
         device_id: fff1787a9e7a855b257b1b8cece4c160
         entity_id: remote.32_tcl_roku_tv
         domain: remote
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.dell_power
     - conditions:
       - condition: trigger
         id: sink on
@@ -771,6 +779,7 @@
           - condition: sun
             before: sunset
             after: sunrise
+            after_offset: -01:00:00
           then:
           - if:
             - condition: state
@@ -830,7 +839,7 @@
           title: BATTERY CR2450
           target:
           - 3305243522@vtext.com
-  mode: single
+  mode: restart
 - id: '1674909942174'
   alias: Appliance Cabinet Light
   description: Turn hall light on/off if not on when getting into cabinet
@@ -956,14 +965,15 @@
             entity_id:
             - automation.upstairs_staircase_motion_lights
             - automation.upstairs_staircase_motion_manual_override
+            - automation.kitchen_motion
         - service: light.turn_off
           data: {}
           target:
-            entity_id: light.upstairs_office
-        - service: fan.turn_off
-          data: {}
-          target:
-            entity_id: fan.family_fan
+            entity_id:
+            - light.upstairs_office
+            - light.kitchen_cabinets
+            - light.kitchen_fan
+            - light.kitchen_fridge
         - if:
           - condition: time
             after: '18:00:00'
@@ -1020,6 +1030,7 @@
             entity_id:
             - automation.upstairs_staircase_motion_lights
             - automation.upstairs_staircase_motion_manual_override
+            - automation.kitchen_motion
     - conditions:
       - condition: trigger
         id: manual on
@@ -1276,6 +1287,36 @@
       data:
         message: Upstairs Staircase Switch (by guitar)
         title: BATTERY CR2032
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.kitchen_1_motion_sensor_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Kitchen Motion Sensor 1
+        title: BATTERY REPLACE (1 x CR2450)
+    - service: notify.email
+      data:
+        message: Kitchen Motion Sensor 1
+        title: BATTERY CR2450
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.kitchen_2_motion_sensor_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Kitchen Motion Sensor 2
+        title: BATTERY REPLACE (1 x CR2450)
+    - service: notify.email
+      data:
+        message: Kitchen Motion Sensor 2
+        title: BATTERY CR2450
         target:
         - 3305243522@vtext.com
   mode: single
@@ -1938,6 +1979,7 @@
     entity_id:
     - input_boolean.water_fountain_change
     id: fountain count
+    to: 'on'
   - platform: template
     value_template: '{{ now().weekday() == 0 }}'
     id: Monday
@@ -2051,7 +2093,7 @@
       - if:
         - condition: numeric_state
           entity_id: counter.water_fountain_count
-          below: 10
+          below: 4
         then:
         - service: counter.increment
           data: {}
@@ -2123,57 +2165,6 @@
     offset: '-10:00'
   condition: []
   action: []
-  mode: single
-- id: '1676664698357'
-  alias: Working in Basement Office
-  description: turn lights off upstairs when holly not home and mark working in basement
-  trigger:
-  - platform: state
-    entity_id:
-    - light.basement
-    to: 'on'
-    for:
-      hours: 0
-      minutes: 1
-      seconds: 0
-  condition:
-  - condition: and
-    conditions:
-    - condition: state
-      entity_id: person.mark
-      state: home
-    - condition: state
-      entity_id: input_boolean.house_guest
-      state: 'off'
-    - condition: not
-      conditions:
-      - condition: state
-        entity_id: person.holly
-        state: home
-  action:
-  - service: light.turn_off
-    data: {}
-    target:
-      entity_id: '{% set reject = [ ''basement'', ''bobulb2'', ''bobulb1'', ''bobulb3'',
-        ''whole_house'', ''wiz_bulb'' ] %} {{ states.light | rejectattr(''object_id'',
-        ''in'', reject) | selectattr(''state'',''eq'',''on'') | map(attribute=''entity_id'')
-        | list }}
-
-        '
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
-  - service: light.turn_off
-    data: {}
-    target:
-      entity_id: '{% set reject = [ ''basement'', ''bobulb2'', ''bobulb1'', ''bobulb3'',
-        ''whole_house'', ''wiz_bulb'' ] %} {{ states.light | rejectattr(''object_id'',
-        ''in'', reject) | selectattr(''state'',''eq'',''on'') | map(attribute=''entity_id'')
-        | list }}
-
-        '
   mode: single
 - id: '1676848009583'
   alias: Trash Reminder
@@ -3524,3 +3515,85 @@
     target:
       entity_id: input_boolean.clean_green_bathroom
   mode: single
+- id: '1680461773886'
+  alias: Kitchen Motion
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.kitchen_1_motion_sensor_occupancy
+    - binary_sensor.kitchen_2_motion_sensor_occupancy
+    to: 'on'
+    id: motion
+  - platform: state
+    entity_id:
+    - binary_sensor.kitchen_2_motion_sensor_occupancy
+    - binary_sensor.kitchen_1_motion_sensor_occupancy
+    to: 'off'
+    id: no motion
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: motion
+      sequence:
+      - if:
+        - condition: state
+          entity_id: light.kitchen
+          state: 'off'
+        then:
+        - if:
+          - condition: sun
+            before: sunset
+            after: sunrise
+            after_offset: -01:00:00
+          then:
+          - service: light.turn_on
+            data:
+              brightness_pct: 100
+            target:
+              entity_id:
+              - light.kitchen_fan
+              - light.kitchen_fridge
+          else:
+          - service: light.turn_on
+            data:
+              brightness_pct: 20
+            target:
+              entity_id:
+              - light.kitchen_fan
+              - light.kitchen_fridge
+          - service: light.turn_on
+            data:
+              color_name: white
+              brightness_pct: 20
+            target:
+              entity_id: light.uc_strip_1
+    - conditions:
+      - condition: trigger
+        id: no motion
+      sequence:
+      - if:
+        - condition: and
+          conditions:
+          - condition: state
+            entity_id: binary_sensor.kitchen_1_motion_sensor_occupancy
+            state: 'off'
+          - condition: state
+            entity_id: binary_sensor.kitchen_2_motion_sensor_occupancy
+            state: 'off'
+        then:
+        - delay:
+            hours: 0
+            minutes: 5
+            seconds: 0
+            milliseconds: 0
+        - service: light.turn_off
+          data:
+            transition: 240
+          target:
+            entity_id:
+            - light.kitchen
+            - light.uc_strip_1
+  mode: restart

@@ -1,0 +1,13 @@
+##################
+## switchs.yaml ##
+##################
+
+- platform: wake_on_lan
+  name: "Dell Power"
+  mac: !secret dellmac
+  broadcast_port: 7
+  turn_off:
+    service: button.press
+    data: {}
+    target:
+      entity_id: button.dell_tower_shutdown

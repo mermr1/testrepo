@@ -21,6 +21,8 @@ cloud:
 
 # mobile_app:
 
+wake_on_lan:
+
 # Load frontend themes from the themes folder
 frontend:
   themes: !include_dir_merge_named themes
@@ -42,6 +44,7 @@ input_text: !include input_texts.yaml
 input_button: !include input_buttons.yaml
 notify: !include notifys.yaml
 template: !include templates.yaml
+switch: !include switchs.yaml
 
 # withings entry true every 120 minutes - false every 10 minutes
 withings:
@@ -63,3 +66,9 @@ withings:
 # Note - if the mount doesn't work, substitute vers=3.0 with  vers=1.0 or vers=2.1
 shell_command:
   pushupdates_to_github: /bin/bash pushupdates.sh
+
+logger:
+  default: warning
+  logs:
+    custom_components.hass_agent: debug
+    
