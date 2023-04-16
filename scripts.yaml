@@ -1185,7 +1185,7 @@ birthday_text_mark:
   - service: notify.email
     data:
       target: 3305243522@vtext.com
-      title: '{% if now().day <=15 %} {{ now().strftime(''%B'') }} Birthdays {% else
+      title: '{% if now().day <=14 %} {{ now().strftime(''%B'') }} Birthdays {% else
         %} {{ (now() + timedelta(days=17)).strftime(''%B'') }} Birthdays {% endif
         %}'
       message: "{% set fname = ['sensor.fname0','sensor.fname1','sensor.fname2','sensor.fname3','sensor.fname4','sensor.fname5','sensor.fname6','sensor.fname7','sensor.fname8','sensor.fname9']
@@ -1230,7 +1230,7 @@ birthday_text_holly:
   - service: notify.email
     data:
       target: 3305249910@vtext.com
-      title: '{% if now().day <=15 %} {{ now().strftime(''%B'') }} Birthdays {% else
+      title: '{% if now().day <=14 %} {{ now().strftime(''%B'') }} Birthdays {% else
         %} {{ (now() + timedelta(days=17)).strftime(''%B'') }} Birthdays {% endif
         %}'
       message: "{% set fname = ['sensor.fname0','sensor.fname1','sensor.fname2','sensor.fname3','sensor.fname4','sensor.fname5','sensor.fname6','sensor.fname7','sensor.fname8','sensor.fname9']
@@ -1481,3 +1481,139 @@ chore_list:
         mother_of_all_macros() -%}   {{ choreList() }} {%- endmacro -%}    {# Call
         the macro  #} {{- cleanup(mother_of_all_macros()) -}}'
   mode: single
+holly_phone_alarm:
+  alias: Holly Phone Alarm
+  sequence:
+  - service: media_player.play_media
+    data:
+      media_content_id: set an alarm for {{ ((((((state_attr('sensor.sm_g960u_next_alarm',
+        'Time in Milliseconds') | int / 1000)) | as_datetime())) | as_local())+ timedelta(
+        minutes = 10)).strftime('%a %H:%M %p') }}
+      media_content_type: custom
+    target:
+      entity_id: media_player.master_echo
+  mode: single
+main_tv_fire_stick:
+  alias: Main TV BluRay
+  sequence:
+  - service: remote.turn_on
+    data:
+      activity: BluRay
+    target:
+      device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+  mode: single
+main_tv_antenna:
+  alias: Main TV Antenna
+  sequence:
+  - service: remote.turn_on
+    data:
+      activity: Antenna
+    target:
+      device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+  mode: single
+main_fire_stick_down:
+  alias: Main Fire Stick Right
+  sequence:
+  - service: remote.send_command
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 0
+      device: Amazon Fire TV Stick
+      command: DirectionRight
+    target:
+      entity_id: remote.harmony_hub
+  mode: single
+main_fire_stick_left:
+  alias: Main Fire Stick Left
+  sequence:
+  - service: remote.send_command
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 0
+      device: Amazon Fire TV Stick
+      command: DirectionLeft
+    target:
+      entity_id: remote.harmony_hub
+  mode: single
+main_fire_stick_up:
+  alias: Main Fire Stick Up
+  sequence:
+  - service: remote.send_command
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 0
+      device: Amazon Fire TV Stick
+      command: DirectionUp
+    target:
+      entity_id: remote.harmony_hub
+  mode: single
+main_fire_stick_down_2:
+  alias: Main Fire Stick Down
+  sequence:
+  - service: remote.send_command
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 0
+      device: Amazon Fire TV Stick
+      command: DirectionDown
+    target:
+      entity_id: remote.harmony_hub
+  mode: single
+main_fire_stick_ok:
+  alias: Main Fire Stick OK
+  sequence:
+  - service: remote.send_command
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 0
+      device: Amazon Fire TV Stick
+      command: OK
+    target:
+      entity_id: remote.harmony_hub
+  mode: single
+main_fire_stick_back:
+  alias: Main Fire Stick Back
+  sequence:
+  - service: remote.send_command
+    data:
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 0
+      device: Amazon Fire TV Stick
+      command: Back
+    target:
+      entity_id: remote.harmony_hub
+  mode: single
+main_tv_volume_down_hold:
+  alias: Main TV Volume Down (hold)
+  sequence:
+  - service: remote.send_command
+    data:
+      delay_secs: 0.4
+      hold_secs: 0
+      device: AV Receiver
+      command: VolumeDown
+      num_repeats: 5
+    target:
+      entity_id: remote.harmony_hub
+  mode: single
+  icon: mdi:volume-minus
+main_tv_volume_up_hold:
+  alias: Main TV Volume Up (hold)
+  sequence:
+  - service: remote.send_command
+    data:
+      delay_secs: 0.4
+      hold_secs: 0
+      device: AV Receiver
+      command: VolumeUp
+      num_repeats: 5
+    target:
+      entity_id: remote.harmony_hub
+  mode: single
+  icon: mdi:volume-minus

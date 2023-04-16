@@ -1,0 +1,22 @@
+{% macro birthdayAnnouncement() %}
+
+{% set bday = ['sensor.bday0',
+'sensor.bday1', 'sensor.bday2', 'sensor.bday3', 
+  'sensor.bday4', 'sensor.bday5', 'sensor.bday6', 'sensor.bday7', 
+  'sensor.bday8', 'sensor.bday9'] %}
+{% set bmonth = ['sensor.bmonth0', 'sensor.bmonth1', 'sensor.bmonth2',
+  'sensor.bmonth3', 'sensor.bmonth4', 'sensor.bmonth5', 'sensor.bmonth6',
+  'sensor.bmonth7', 'sensor.bmonth8', 'sensor.bmonth9'] %}
+{% set fname = ['sensor.fname0', 'sensor.fname1', 'sensor.fname2',
+'sensor.fname3',
+  'sensor.fname4', 'sensor.fname5', 'sensor.fname6', 'sensor.fname7',
+  'sensor.fname8', 'sensor.fname9'] %}
+{% set age = ['sensor.age0', 'sensor.age1', 'sensor.age2', 'sensor.age3',
+'sensor.age4',
+  'sensor.age5', 'sensor.age6', 'sensor.age7', 'sensor.age8', 'sensor.age9'] %}
+{% for i in range (10) %} {%- if (states(bmonth[i], 'state')|int) ==
+now().month %} {% if (states(bday[i], 'state')|int) == now().day %} {{
+states(fname[i], 'state') }} is going to be {{ states(age[i], 'state') }}
+years old. {% endif %} {% endif -%} {% endfor %} 
+
+{% endmacro %}

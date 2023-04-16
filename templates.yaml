@@ -464,3 +464,7 @@
     unique_id: d9e26973-d993-4a05-a46a-489cedf05d2c
     state: >
       {{ state_attr('climate.house','hvac_action') }}
+      
+  - name: Family_Room_Remote
+    state: >
+      {{ state_attr('remote.harmony_hub', 'current_activity') }}

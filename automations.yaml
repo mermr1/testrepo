@@ -820,6 +820,10 @@
           data: {}
           target:
             entity_id: input_boolean.upstairs_office_light_status
+        - service: light.turn_off
+          data: {}
+          target:
+            entity_id: light.upstairs_office
         else:
         - service: light.turn_off
           data: {}
@@ -957,6 +961,17 @@
           - condition: state
             entity_id: input_boolean.house_guest
             state: 'off'
+          - condition: time
+            after: '19:00:00'
+            before: 04:00:00
+            weekday:
+            - sat
+            - fri
+            - thu
+            - wed
+            - tue
+            - mon
+            - sun
         then:
         - service: automation.turn_off
           data:
@@ -3597,3 +3612,58 @@
             - light.kitchen
             - light.uc_strip_1
   mode: restart
+- id: '1681492396581'
+  alias: Holly Phone Alarm Set
+  description: set alarm on alexa from holly's phone for work.  backup measure
+  trigger:
+  - type: plugged_in
+    platform: device
+    device_id: d5c90cbe64148e49a56d125f102123f3
+    entity_id: binary_sensor.sm_g960u_is_charging
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+  condition: []
+  action:
+  - service: script.holly_phone_alarm
+    data: {}
+  mode: single
+- id: '1681655023798'
+  alias: TEST breezeway Vibration TEST
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: d205dbacf25e63aecfbf383d5fc7c78e
+    entity_id: binary_sensor.breezeway_vibration_sensor
+    domain: binary_sensor
+    id: detect
+  - platform: state
+    entity_id:
+    - binary_sensor.breezeway_vibration_sensor
+    from: 'on'
+    id: clear
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: detect
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.wall_left_plug
+    - conditions:
+      - condition: trigger
+        id: ''
+      - condition: trigger
+        id: clear
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.wall_left_plug
+  mode: single

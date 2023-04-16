@@ -1,0 +1,22 @@
+{# National Holiday Announcememnt #}
+{% macro NationalHoliday() %}
+  {%- if state_attr('calendar.natdaycal_com_national_day_calendar','message') -%}
+    {% set holiday = state_attr('calendar.natdaycal_com_national_day_calendar','message') | capitalize %}
+      {% if 'National' in holiday %}
+        {{ ['Today is also known as ','Today we are also celebrating '] | random }}
+        {{ state_attr('calendar.natdaycal_com_national_day_calendar', 'message') | replace('&',' and ') }}.  
+        {% if 'artichoke' in holiday %}
+        {{ ['Artichokes should not have a national holiday.  ','EEEWWWW! artichokes are nasty!  ','How did artichokes get a holiday.  '] | random }}
+      {% endif %}
+        {# add here for next holiday comment #}
+      {% else %}
+        Happy {{ holiday }}.  
+        {% if 'fools' in holiday %}
+          {{ ['Which reminds me. The camera looking at the drive way caught a Tee Rex last night. <break time="1s"/>April Fools!',
+              'Which reminds me. I won the lottery and I am moving out to go live with Siri. <break time="1s"/> April Fools!',
+              'Which reminds me. there was a time change last night. We have jumped 15 years into the future. <break time="1s"/> April Fools!'
+              ]|random }}
+        {% endif %}
+      {% endif %}
+  {%- endif -%}
+{% endmacro %}

@@ -1,0 +1,36 @@
+{% macro BirthCount() %} 
+
+{% set count = 0 %} {% if states('sensor.bmonth0',
+'state')|int == now().month and 
+  states('sensor.bday0', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if states('sensor.bmonth1',
+'state')|int == now().month and 
+  states('sensor.bday1', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if states('sensor.bmonth2',
+'state')|int == now().month and 
+  states('sensor.bday2', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if states('sensor.bmonth3',
+'state')|int == now().month and 
+  states('sensor.bday3', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if states('sensor.bmonth4',
+'state')|int == now().month and 
+  states('sensor.bday4', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if states('sensor.bmonth5',
+'state')|int == now().month and 
+  states('sensor.bday5', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if states('sensor.bmonth6',
+'state')|int == now().month and 
+  states('sensor.bday6', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if states('sensor.bmonth7',
+'state')|int == now().month and 
+  states('sensor.bday7', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if states('sensor.bmonth8',
+'state')|int == now().month and 
+  states('sensor.bday8', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if states('sensor.bmonth9',
+'state')|int == now().month and 
+  states('sensor.bday9', 'state')|int == now().day %}
+{% set count= count + 1 %} {% endif %} {% if count >= 1 %} You have {{ count
+}} birthdays today. {% endif %}
+
+{% endmacro %}

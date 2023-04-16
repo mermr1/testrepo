@@ -1,0 +1,7 @@
+{% macro mailNotify() %}
+
+  {% if (states('input_boolean.mail_reminder','state') == 'on') and (now().weekday() != 6) %}
+    Remember to take the mail to the post office today.
+  {% endif %}
+  
+{% endmacro %}

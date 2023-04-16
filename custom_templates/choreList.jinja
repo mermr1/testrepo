@@ -1,0 +1,56 @@
+{# chore list #} {% macro choreList() %}
+  {% if is_state('input_boolean.clean_sweepers','on') %}
+  {{ ['Time to clean the sweepers.  ',
+    'Sweepers need to be cleaned today.  ',
+    'Today is the day to do sweeper maintenance.  '
+    ] | random }}
+  {% endif %}
+  {% if is_state('input_boolean.water_fountain_change','on') %}
+  {{ ['Time to change the water in the cat fountain.  ',
+    'The cats would like fresh water today.  ',
+    'Fountain water needs changed before it grows algae.  '
+    ] | random }}
+  {% endif %}
+  {% if is_state('input_boolean.water_fountain_clean','on') %}
+  {{ ['The cat fountain needs cleaned, washed, and descaled.  ',
+    'Today is the day to wash the cat fountain.  ',
+    'Clean out and was the cats water fountain.  '
+    ] | random }}
+  {% endif %}
+  {% if is_state('input_boolean.sweep_furniture','on') %}
+  {{ ['Time to sweep off the furniture.  ',
+    'The chair and living room furniture need swept today.  ',
+    'Sweep the chair, love seat, and two futons.  '
+    ] | random }}
+  {% endif %}
+  {% if is_state('input_boolean.clean_steps','on') %}
+  {{ ['The steps need swept today.  ',
+    'Time to sweep the steps again!  ',
+    'Sure hope you feel like sweeping the steps today.  '
+    ] | random }}
+  {% endif %}
+  {% if is_state('input_boolean.clean_green_bathroom','on') %}
+  {{ ['Time to clean the ugly green bathroom and make it pretty again.  ',
+    'The green bathroom needs to be cleaned today.  ',
+    'That seventies bathroom needs updated, or just cleaned.  '
+    ] | random }}
+  {% endif %}
+  {% if is_state('input_boolean.clean_master_bathroom','on') %}
+  {{ ['Upstairs bathroom needs cleaned.  ',
+    'How about you clean the master bathroom today.  ',
+    'Holly would like to have her bathroom cleaned.  '
+    ] | random }}
+    {% endif %}
+    {% if is_state('input_boolean.dust_house','on') %}
+    {{ ['I can write my name in the dust because it is so thick.  ',
+      'How about you do some dusting today.  ',
+      'The house is getting pretty dusty.  '
+      ] | random }}
+    {% endif %}
+    {% if is_state('input_boolean.clean_ceiling_fans','on') %}
+    {{ ['Time to clean the ceiling fans again.  ',
+      'Hey, do you think you should clean the ceiling fans?  ',
+      'You should see all the dirt the ceiling fans throw arround.  '
+      ] | random }}
+    {% endif %}
+{% endmacro %}

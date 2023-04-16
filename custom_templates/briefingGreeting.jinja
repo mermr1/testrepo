@@ -1,0 +1,15 @@
+{%- macro briefingGreeting() -%} 
+
+{% set time = now().hour %}
+
+{% if (time >= 17) %}
+  Good Evening.
+{% elif (time >= 12) %}
+  Good Afternoon.
+{% elif (time >= 4) %}
+  Good Morning.
+{% else %}
+  Hello.
+{% endif %}
+
+{% endmacro %}

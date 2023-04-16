@@ -1,0 +1,25 @@
+{% macro appAnnouncement() %}
+  {%- if state_attr('calendar.mrosshomeassist_gmail_com','message') %}
+    {% set app_date = (state_attr('calendar.mrosshomeassist_gmail_com','start_time').split(' ') [0]) %}
+    {% set app_year = app_date.split('-') [0] %}
+    {% set app_month = app_date.split('-') [1] %}
+    {% set app_day = app_date.split('-') [2] %}
+    {% set app_time = state_attr('calendar.mrosshomeassist_gmail_com','start_time').split(' ') [1] %}
+    {% set app_time_hour = app_time.split(':') [0] %}
+    {% set app_time_minute = app_time.split(':') [1] %}
+    {% if app_time_hour|int >=12 %}
+      {% set apptime = (app_time_hour|int - 12) ~ ':' ~ app_time_minute ~ ' pm.' %}
+    {% elif app_time_hour|int < 12 %}
+      {% set apptime = app_time_hour|int ~ ':' ~ app_time_minute ~ ' am.' %}
+    {% elif app_time_hour|int == 0 %}
+      {% set apptime = '12:' ~ app_time_minute ~ ' am.' %}
+    {% endif %}
+    {% if (now().year == app_year|int) and (now().month == app_month|int) and (now().day == app_day|int) %}
+      {% if ((state_attr('calendar.mrosshomeassist_gmail_com','message').split(' ') [0]) == 'Dr') %}
+      {% set doctor = state_attr('calendar.mrosshomeassist_gmail_com','message') %}
+      {% set phrase = 'You have an appointment with ' ~ doctor ~ ' at ' ~ apptime %}
+      {{ phrase }}
+      {% endif %}
+    {% endif %}
+  {%- endif %}
+{% endmacro %}

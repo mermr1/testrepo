@@ -1,0 +1,11 @@
+{% macro getSweepers() %}
+
+{% set count = (states.vacuum |
+selectattr('state', '!=', 'docked') | list | length ) %} {% if count > 0 %}
+You have {{ count }} sweepers missing.   This is who is missing.   {% for
+state in states.vacuum | selectattr('state', '!=', 'docked') %}  {{
+state_attr(state.entity_id, 'friendly_name') }}.    {% endfor %} {% else %}
+{{ [ 'All the good little robots are charging.  ', 'No sweepers mising',
+'Everyone is on  there dock.  ' ] | random }} {% endif %} 
+
+{% endmacro %}
