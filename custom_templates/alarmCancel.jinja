@@ -1,0 +1,11 @@
+{% macro alarmCancel() %}
+  {% set alarm_day = (as_timestamp(states('sensor.master_echo_next_alarm')) | timestamp_custom('%-d')) | float %}
+  {% set alarm_time = as_timestamp(states('sensor.master_echo_next_alarm')) | timestamp_custom('%H:%M') %}
+  {% if alarm_day == (now().day) | float %}
+    {% if alarm_time == "04:10" %}
+    delete next alarm on master echo
+    {% endif %}
+  {% else %}
+  what time is it?
+  {% endif %}
+{% endmacro %}

@@ -2,7 +2,7 @@
 
 Today the weather will be {{
 states('weather.firestone_house', 'state') }} with  a high of {{
-states('sensor.hightemp', 'state') }} and a low of {{
-states('sensor.lowtemp', 'state') }} degrees. 
+states('sensor.hightemp', 'state') }} and a low of 
+{{ states('sensor.lowtemp', 'state') }} degrees. 
 
 {% endmacro %}

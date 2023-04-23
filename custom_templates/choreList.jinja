@@ -53,4 +53,16 @@
       'You should see all the dirt the ceiling fans throw arround.  '
       ] | random }}
     {% endif %}
+    {% if is_state('input_boolean.mop_kitchen','on') %}
+    {{ ['How about you sweep and mop the kitchen today!  ',
+      'Kitchen floor is getting dirty and needs cleaned.  ',
+      'Do you think you should mop the kitchen floor?  '
+      ] | random }}
+    {% endif %}
+    {% if is_state('input_boolean.kitchen_curtains'.'on') %}
+    {{ ['Time to change the kitchen curatins again.  ',
+      'Hey, why don't you shave the curtains.  ',
+      'Kitchen curatins have more hair on them than my head.  '
+      ] | random }}
+    {% endif %}
 {% endmacro %}
