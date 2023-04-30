@@ -59,9 +59,9 @@
       'Do you think you should mop the kitchen floor?  '
       ] | random }}
     {% endif %}
-    {% if is_state('input_boolean.kitchen_curtains'.'on') %}
+    {% if is_state('input_boolean.kitchen_curtains','on') %}
     {{ ['Time to change the kitchen curatins again.  ',
-      'Hey, why don't you shave the curtains.  ',
+      'Hey, you should shave those fury curtains.  ',
       'Kitchen curatins have more hair on them than my head.  '
       ] | random }}
     {% endif %}

@@ -46,6 +46,7 @@
           - switch.basement_sink_switch
           - switch.wall_left_plug
           - switch.wall_right_plug
+          - switch.basement_desk_lamp
       - type: turn_on
         device_id: fff1787a9e7a855b257b1b8cece4c160
         entity_id: remote.32_tcl_roku_tv
@@ -67,6 +68,7 @@
           - switch.wall_right_plug
           - switch.basement_coffee_plug
           - switch.basement_counter_plug
+          - switch.basement_desk_lamp
       - type: turn_off
         device_id: fff1787a9e7a855b257b1b8cece4c160
         entity_id: remote.32_tcl_roku_tv
@@ -496,6 +498,12 @@
     - input_boolean.bed_mark
     to: 'off'
     id: upstairs coffee
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: basement_coffee_event
+      event_response_type: ResponseNone
+    id: basement none
   condition: []
   action:
   - choose:
@@ -541,6 +549,25 @@
           - media_player.basement_echo
           data:
             type: tts
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 2
+          milliseconds: 0
+      - if:
+        - condition: and
+          conditions:
+          - condition: state
+            entity_id: person.mark
+            state: home
+          - condition: not
+            conditions:
+            - condition: state
+              entity_id: person.holly
+              state: home
+        then:
+        - service: script.temp_adjust_basement
+          data: {}
     - conditions:
       - condition: trigger
         id: Basement no
@@ -650,6 +677,19 @@
         data: {}
         target:
           entity_id: input_boolean.coffee_ran
+    - conditions:
+      - condition: trigger
+        id: basement none
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 5
+          seconds: 0
+          milliseconds: 0
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.basement
   mode: single
 - id: '1674863381231'
   alias: Medication
@@ -736,110 +776,6 @@
         target:
           entity_id: input_boolean.morning_shot
   mode: single
-- id: '1674908931703'
-  alias: Upstairs Staircase Motion Lights
-  description: turn lights on and off and adjust brightness accordingly
-  trigger:
-  - type: motion
-    platform: device
-    device_id: a61ce62c5be730aaeb484b256fdd4d15
-    entity_id: binary_sensor.upstairs_motion_sensor_occupancy
-    domain: binary_sensor
-    id: motion yes
-  - type: no_motion
-    platform: device
-    device_id: a61ce62c5be730aaeb484b256fdd4d15
-    entity_id: binary_sensor.upstairs_motion_sensor_occupancy
-    domain: binary_sensor
-    id: motion no
-  - platform: numeric_state
-    entity_id: sensor.upstairs_motion_sensor_battery
-    below: 10
-    id: low battery
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: motion yes
-      sequence:
-      - if:
-        - condition: state
-          entity_id: light.upstairs_office
-          state: 'on'
-        then:
-        - service: input_boolean.turn_on
-          entity_id: input_boolean.upstairs_office_light_status
-        else:
-        - if:
-          - condition: sun
-            before: sunset
-            after: sunrise
-            after_offset: -01:00:00
-          then:
-          - if:
-            - condition: state
-              entity_id: light.upstairs_office
-              state: 'off'
-            then:
-            - service: light.turn_on
-              data:
-                brightness_pct: 100
-              target:
-                entity_id: light.upstairs_office
-          else:
-          - if:
-            - condition: state
-              entity_id: light.upstairs_office
-              state: 'off'
-            then:
-            - service: light.turn_on
-              data:
-                brightness_pct: 25
-              target:
-                entity_id: light.upstairs_office
-    - conditions:
-      - condition: trigger
-        id: motion no
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 1
-          seconds: 0
-          milliseconds: 0
-      - if:
-        - condition: state
-          entity_id: input_boolean.upstairs_office_light_status
-          state: 'on'
-        then:
-        - service: input_boolean.turn_off
-          data: {}
-          target:
-            entity_id: input_boolean.upstairs_office_light_status
-        - service: light.turn_off
-          data: {}
-          target:
-            entity_id: light.upstairs_office
-        else:
-        - service: light.turn_off
-          data: {}
-          target:
-            entity_id: light.upstairs_office
-    - conditions:
-      - condition: trigger
-        id: low battery
-      sequence:
-      - service: notify.persistent_notification
-        data:
-          title: REPLACE BATTERY (1 x CR2450)
-          message: Upstairs Motion Sensor
-      - service: notify.email
-        data:
-          message: Upstairs Motion Sensor
-          title: BATTERY CR2450
-          target:
-          - 3305243522@vtext.com
-  mode: restart
 - id: '1674909942174'
   alias: Appliance Cabinet Light
   description: Turn hall light on/off if not on when getting into cabinet
@@ -932,12 +868,6 @@
     to: 'off'
     id: 'Off'
     enabled: true
-  - platform: state
-    entity_id:
-    - light.upstairs_office
-    to: 'on'
-    id: manual on
-    enabled: false
   condition: []
   action:
   - choose:
@@ -974,10 +904,11 @@
             stop_actions: false
           target:
             entity_id:
-            - automation.upstairs_staircase_motion_lights
-            - automation.upstairs_staircase_motion_manual_override
             - automation.kitchen_motion
             - automation.landing_test
+            - automation.upstairs_staircase_motion_lights_2
+            - automation.basement_motion
+            - automation.outside_work_on_off
         - service: light.turn_off
           data: {}
           target:
@@ -1022,6 +953,8 @@
                 | list }}
 
                 '
+      - service: script.secure_house
+        data: {}
     - conditions:
       - condition: trigger
         id: 'Off'
@@ -1040,34 +973,11 @@
           data: {}
           target:
             entity_id:
-            - automation.upstairs_staircase_motion_lights
-            - automation.upstairs_staircase_motion_manual_override
             - automation.kitchen_motion
             - automation.landing_test
-    - conditions:
-      - condition: trigger
-        id: manual on
-      sequence:
-      - if:
-        - condition: state
-          entity_id: binary_sensor.upstairs_motion_sensor_occupancy
-          state: 'off'
-        - condition: and
-          conditions:
-          - condition: or
-            conditions:
-            - condition: state
-              entity_id: input_boolean.bed_holly
-              state: 'off'
-            - condition: state
-              entity_id: input_boolean.bed_mark
-              state: 'off'
-        then:
-        - service: automation.turn_off
-          data:
-            stop_actions: false
-          target:
-            entity_id: automation.upstairs_staircase_motion_lights
+            - automation.upstairs_staircase_motion_lights_2
+            - automation.basement_motion
+            - automation.outside_work_on_off
   mode: single
 - id: '1674997041729'
   alias: Battery Check
@@ -1495,6 +1405,8 @@
           then:
           - service: script.green_door
             data: {}
+      - service: script.temp_normal
+        data: {}
       - service: automation.turn_off
         data:
           stop_actions: true
@@ -1645,6 +1557,8 @@
           data: {}
           target:
             entity_id: input_button.green_door_helper_button
+      - service: script.temp_normal
+        data: {}
       - service: automation.turn_off
         data:
           stop_actions: false
@@ -2968,7 +2882,7 @@
     for:
       hours: 0
       minutes: 0
-      seconds: 2
+      seconds: 0
     id: manual switch on
   condition: []
   action:
@@ -2981,31 +2895,26 @@
         data: {}
         target:
           entity_id: input_boolean.upstairs_office_light_status
-      - if:
-        - condition: state
-          state: 'off'
-          entity_id: binary_sensor.upstairs_motion_sensor_occupancy
-        then:
-        - service: automation.turn_on
-          data: {}
-          target:
-            entity_id: automation.upstairs_staircase_motion_lights
     - conditions:
       - condition: trigger
         id: manual switch on
+      - condition: and
+        conditions:
+        - type: is_no_motion
+          condition: device
+          device_id: a61ce62c5be730aaeb484b256fdd4d15
+          entity_id: binary_sensor.upstairs_motion_sensor_occupancy
+          domain: binary_sensor
+        - type: is_not_open
+          condition: device
+          device_id: d547b5942df5993d0e556f6735060633
+          entity_id: binary_sensor.upstairs_door_sensor_contact
+          domain: binary_sensor
       sequence:
-      - if:
-        - condition: not
-          conditions:
-          - condition: state
-            state: 'on'
-            entity_id: binary_sensor.upstairs_motion_sensor_occupancy
-        then:
-        - service: automation.turn_off
-          data:
-            stop_actions: true
-          target:
-            entity_id: automation.upstairs_staircase_motion_lights
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.upstairs_office_light_status
   mode: single
 - id: '1679505555393'
   alias: HVAC Fan Assist
@@ -3026,36 +2935,6 @@
       - condition: trigger
         id: fan on
       sequence:
-      - if:
-        - condition: state
-          entity_id: fan.family_fan
-          state: 'on'
-        then:
-        - service: input_boolean.turn_on
-          data: {}
-          target:
-            entity_id: input_boolean.fan_helper_family
-        else:
-        - service: fan.set_percentage
-          data:
-            percentage: 33
-          target:
-            entity_id: fan.family_fan
-      - if:
-        - condition: state
-          entity_id: fan.master_fan
-          state: 'on'
-        then:
-        - service: input_boolean.turn_on
-          data: {}
-          target:
-            entity_id: input_boolean.fan_helper_master
-        else:
-        - service: fan.set_percentage
-          data:
-            percentage: 33
-          target:
-            entity_id: fan.master_fan
       - if:
         - condition: state
           entity_id: switch.box_fan_plug
@@ -3092,34 +2971,6 @@
           data: {}
           target:
             entity_id: switch.box_fan_plug
-      - if:
-        - condition: state
-          entity_id: input_boolean.fan_helper_family
-          state: 'on'
-        then:
-        - service: input_boolean.turn_off
-          data: {}
-          target:
-            entity_id: input_boolean.fan_helper_family
-        else:
-        - service: fan.turn_off
-          data: {}
-          target:
-            entity_id: fan.family_fan
-      - if:
-        - condition: state
-          entity_id: input_boolean.fan_helper_master
-          state: 'on'
-        then:
-        - service: input_boolean.turn_off
-          data: {}
-          target:
-            entity_id: input_boolean.fan_helper_master
-        else:
-        - service: fan.turn_off
-          data: {}
-          target:
-            entity_id: fan.master_fan
       - service: switch.turn_off
         data: {}
         target:
@@ -3159,145 +3010,6 @@
         message: Please take the mail with you!
         data:
           type: tts
-  mode: single
-- id: '1679681582131'
-  alias: House Occuppancy
-  description: turn things on and off when house is occupied or not occupied.
-  trigger:
-  - platform: state
-    entity_id:
-    - input_boolean.house_occuppied
-    to: 'off'
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-    id: away
-  - platform: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.sweeper_away_timer
-    id: timer finished
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: away
-      sequence:
-      - service: light.turn_off
-        data: {}
-        target:
-          entity_id: light.whole_house
-      - service: switch.turn_off
-        data: {}
-        target:
-          entity_id:
-          - switch.wall_left_plug
-          - switch.wall_right_plug
-          - switch.basement_counter_plug
-          - switch.basement_coffee_plug
-          - switch.upstairs_coffee_plug
-          - switch.basement_sink_switch
-      - if:
-        - condition: state
-          entity_id: input_boolean.sweeper_out_of_service_alice
-          state: 'off'
-        then:
-        - service: vacuum.start
-          data: {}
-          target:
-            entity_id: vacuum.alice
-      - if:
-        - condition: state
-          entity_id: input_boolean.sweeper_out_of_service_benson
-          state: 'off'
-        then:
-        - service: vacuum.start
-          data: {}
-          target:
-            entity_id: vacuum.benson
-      - if:
-        - condition: state
-          entity_id: input_boolean.sweeper_out_of_service_lurch
-          state: 'off'
-        then:
-        - service: vacuum.start
-          data: {}
-          target:
-            entity_id: vacuum.lurch
-      - if:
-        - condition: state
-          entity_id: input_boolean.sweeper_out_of_service_mister_belvedere
-          state: 'off'
-        then:
-        - service: vacuum.start
-          data: {}
-          target:
-            entity_id: vacuum.mister_belvedere
-      - if:
-        - condition: state
-          state: 'off'
-          entity_id: input_boolean.sweeper_out_of_service_rosie
-        then:
-        - if:
-          - condition: state
-            entity_id: input_boolean.sweep_zone_office
-            state: 'on'
-          then:
-          - service: media_player.play_media
-            data:
-              media_content_id: clean office
-              media_content_type: routine
-            target:
-              entity_id: media_player.master_echo
-          - service: input_boolean.toggle
-            data: {}
-            target:
-              entity_id: input_boolean.sweep_zone_office
-          else:
-          - service: media_player.play_media
-            data:
-              media_content_id: clean master bedroom
-              media_content_type: routine
-            target:
-              entity_id: media_player.master_echo
-          - service: input_boolean.toggle
-            data: {}
-            target:
-              entity_id: input_boolean.sweep_zone_office
-      - if:
-        - condition: or
-          conditions:
-          - condition: state
-            entity_id: vacuum.alice
-            state: cleaning
-          - condition: state
-            entity_id: vacuum.benson
-            state: cleaning
-          - condition: state
-            entity_id: vacuum.lurch
-            state: cleaning
-          - condition: state
-            entity_id: vacuum.mister_belvedere
-            state: cleaning
-        then:
-        - service: timer.start
-          data: {}
-          target:
-            entity_id: timer.sweeper_away_timer
-    - conditions:
-      - condition: trigger
-        id: timer finished
-      sequence:
-      - service: vacuum.return_to_base
-        data: {}
-        target:
-          entity_id:
-          - vacuum.alice
-          - vacuum.benson
-          - vacuum.lurch
-          - vacuum.mister_belvedere
   mode: single
 - id: '1679698078626'
   alias: Test Timer
@@ -3849,4 +3561,290 @@
         brightness_pct: 75
       target:
         entity_id: light.wiz_bulb
+  mode: single
+- id: '1682359701039'
+  alias: Upstairs Staircase Motion Lights
+  description: ''
+  trigger:
+  - type: opened
+    platform: device
+    device_id: d547b5942df5993d0e556f6735060633
+    entity_id: binary_sensor.upstairs_door_sensor_contact
+    domain: binary_sensor
+    id: light on
+  - type: motion
+    platform: device
+    device_id: a61ce62c5be730aaeb484b256fdd4d15
+    entity_id: binary_sensor.upstairs_motion_sensor_occupancy
+    domain: binary_sensor
+    id: light on
+  - type: not_opened
+    platform: device
+    device_id: d547b5942df5993d0e556f6735060633
+    entity_id: binary_sensor.upstairs_door_sensor_contact
+    domain: binary_sensor
+    id: light off
+  - type: no_motion
+    platform: device
+    device_id: a61ce62c5be730aaeb484b256fdd4d15
+    entity_id: binary_sensor.upstairs_motion_sensor_occupancy
+    domain: binary_sensor
+    id: light off
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: light on
+      sequence:
+      - if:
+        - condition: state
+          entity_id: light.upstairs_office
+          state: 'off'
+        then:
+        - if:
+          - condition: sun
+            before: sunrise
+            before_offset: -01:00:00
+            after: sunset
+          then:
+          - service: light.turn_on
+            data:
+              brightness_pct: 20
+            target:
+              entity_id: light.upstairs_office
+          else:
+          - service: light.turn_on
+            data:
+              brightness_pct: 100
+            target:
+              entity_id: light.upstairs_office
+        else: []
+    - conditions:
+      - condition: trigger
+        id: light off
+      sequence:
+      - if:
+        - condition: and
+          conditions:
+          - type: is_no_motion
+            condition: device
+            device_id: a61ce62c5be730aaeb484b256fdd4d15
+            entity_id: binary_sensor.upstairs_motion_sensor_occupancy
+            domain: binary_sensor
+          - type: is_not_open
+            condition: device
+            device_id: d547b5942df5993d0e556f6735060633
+            entity_id: binary_sensor.upstairs_door_sensor_contact
+            domain: binary_sensor
+        then:
+        - if:
+          - condition: state
+            entity_id: input_boolean.upstairs_office_light_status
+            state: 'off'
+          then:
+          - delay:
+              hours: 0
+              minutes: 1
+              seconds: 0
+              milliseconds: 0
+          - service: light.turn_off
+            data: {}
+            target:
+              entity_id: light.upstairs_office
+          else:
+          - service: input_boolean.turn_off
+            data: {}
+            target:
+              entity_id: input_boolean.upstairs_office_light_status
+  mode: restart
+- id: '1682376115596'
+  alias: Garage Light Turn On
+  description: Turn on garage light when garage door opens.
+  trigger:
+  - type: opened
+    platform: device
+    device_id: b270b50d5f6f44f6258044a29618be00
+    entity_id: binary_sensor.garage_door_open
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: light.turn_on
+    data:
+      brightness_pct: 100
+    target:
+      entity_id: light.garage
+  mode: single
+- id: '1682538436860'
+  alias: Outside Work
+  description: lock and unlock door according to garage doors while working outside
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.green_garage_door_sensor_contact
+    - binary_sensor.blue_garage_door_sensor_contact
+    to: 'on'
+    id: open
+  - platform: state
+    entity_id:
+    - binary_sensor.green_garage_door_sensor_contact
+    - binary_sensor.blue_garage_door_sensor_contact
+    to: 'off'
+    id: closed
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: open
+      sequence:
+      - if:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: binary_sensor.green_garage_door_sensor_contact
+            state: 'on'
+          - condition: state
+            entity_id: binary_sensor.blue_garage_door_sensor_contact
+            state: 'on'
+        then:
+        - service: lock.unlock
+          data: {}
+          target:
+            entity_id: lock.garage_door
+    - conditions:
+      - condition: trigger
+        id: closed
+      sequence:
+      - if:
+        - condition: and
+          conditions:
+          - condition: state
+            entity_id: binary_sensor.green_garage_door_sensor_contact
+            state: 'off'
+          - condition: state
+            entity_id: binary_sensor.blue_garage_door_sensor_contact
+            state: 'off'
+        then:
+        - service: lock.lock
+          data: {}
+          target:
+            entity_id: lock.garage_door
+  mode: single
+- id: '1682538678007'
+  alias: 'Outside Work ON/OFF '
+  description: turn outside work automation on and off with alexa command
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.outside_work
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: input_boolean.outside_work
+      state: 'on'
+    then:
+    - service: automation.turn_on
+      data: {}
+      target:
+        entity_id: automation.outside_work
+    else:
+    - service: automation.turn_off
+      data:
+        stop_actions: false
+      target:
+        entity_id: automation.outside_work
+    - if:
+      - condition: state
+        entity_id: binary_sensor.green_garage_door_sensor_contact
+        state: 'on'
+      then:
+      - service: script.green_door
+        data: {}
+    - if:
+      - condition: state
+        entity_id: binary_sensor.blue_garage_door_sensor_contact
+        state: 'on'
+      then:
+      - service: script.blue_door
+        data: {}
+    - service: lock.lock
+      data: {}
+      target:
+        entity_id: lock.house_locks
+  mode: single
+- id: '1682616369321'
+  alias: Home Occupied
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.home_occupancy
+    to: 'off'
+    id: 'off'
+  - platform: state
+    entity_id:
+    - binary_sensor.home_occupancy
+    to: 'on'
+    id: 'on'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 2
+          seconds: 0
+          milliseconds: 0
+      - service: script.temp_away
+        data: {}
+  mode: single
+- id: '1682694655208'
+  alias: Thermostat Adjustment
+  description: Adjust Thermostat every hour according to temperature differences
+  trigger:
+  - platform: template
+    value_template: '{{ (now().hour*60+now().minute)%60==25 }}'
+  condition: []
+  action:
+  - if:
+    - condition: template
+      value_template: '{{ states(''input_text.temp_adjust_room'',''state'') == "basement"
+        }}'
+    then:
+    - service: script.temp_adjust_basement
+      data: {}
+    else: []
+  - if:
+    - condition: template
+      value_template: '{{ states(''input_text.temp_adjust_room'',''state'') == "kitchen"
+        }}'
+    then:
+    - service: script.temp_adjust_kitchen
+      data: {}
+  - if:
+    - condition: template
+      value_template: '{{ states(''input_text.temp_adjust_room'',''state'') == "family
+        room" }}'
+    then:
+    - service: script.temp_adjust_family_room
+      data: {}
+  - if:
+    - condition: template
+      value_template: '{{ states(''input_text.temp_adjust_room'',''state'') == "living
+        room" }}'
+    then:
+    - service: script.temp_adjust_living_room
+      data: {}
+  - if:
+    - condition: template
+      value_template: '{{ states(''input_text.temp_adjust_room'',''state'') == "master
+        bedroom" }}'
+    then:
+    - service: script.temp_adjust_master_bedroom
+      data: {}
   mode: single

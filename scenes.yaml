@@ -18,9 +18,9 @@
       hue_scenes: []
       hue_type: room
       lights:
-      - bobulb1
-      - bobulb3
       - bobulb2
+      - bobulb3
+      - bobulb1
       dynamics: false
       icon: mdi:ceiling-light
       friendly_name: Basement
@@ -46,6 +46,10 @@
       friendly_name: Basement Corner
       supported_features: 44
       state: 'off'
+    switch.basement_desk_lamp:
+      device_class: outlet
+      friendly_name: Basement Desk Lamp
+      state: 'on'
   icon: mdi:microsoft-office
   metadata: {}
 - id: '1676664502728'

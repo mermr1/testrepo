@@ -667,7 +667,7 @@ guest_motion:
   sequence:
   - if:
     - condition: state
-      entity_id: input_boolean.house_guest
+      entity_id: switch.visitors
       state: 'on'
     then:
     - service: automation.turn_off
@@ -677,7 +677,8 @@ guest_motion:
     - service: automation.turn_on
       data: {}
       target:
-        entity_id: automation.upstairs_staircase_motion_lights
+        entity_id:
+        - automation.upstairs_staircase_motion_lights_2
     else:
     - service: automation.turn_off
       data: {}
@@ -1477,4 +1478,203 @@ basement_fireplace:
       entity_id:
       - switch.wall_left_plug
       - switch.wall_right_plug
+  mode: single
+secure_house:
+  alias: Secure House
+  sequence:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.blue_garage_door_sensor_contact
+      state: 'on'
+    then:
+    - service: script.blue_door
+      data: {}
+  - if:
+    - condition: state
+      entity_id: binary_sensor.green_garage_door_sensor_contact
+      state: 'on'
+    then:
+    - service: script.green_door
+      data: {}
+  - if:
+    - condition: state
+      entity_id: lock.garage_door
+      state: unlocked
+    then:
+    - service: lock.lock
+      data: {}
+      target:
+        entity_id: lock.garage_door
+  - if:
+    - condition: state
+      entity_id: lock.porch_door
+      state: unlocked
+    then:
+    - service: lock.lock
+      data: {}
+      target:
+        entity_id: lock.porch_door
+  mode: single
+normal_temperature:
+  alias: Normal Temperature
+  sequence:
+  - service: climate.set_temperature
+    data:
+      target_temp_high: 74
+      target_temp_low: 68
+      hvac_mode: heat_cool
+    target:
+      device_id: 04ebda3d245199883493dcb511b07e87
+  - service: climate.set_temperature
+    data:
+      target_temp_high: 68
+      target_temp_low: '{{ 74 + (states(''sensor.basement_temperature_adjustment'',''state''))
+        }}
+
+        '
+      hvac_mode: heat_cool
+    target:
+      device_id: 04ebda3d245199883493dcb511b07e87
+  mode: single
+temp_adjust_basement:
+  alias: Temp Adjust Basement
+  sequence:
+  - service: climate.set_temperature
+    data:
+      hvac_mode: heat_cool
+      target_temp_high: '{{ (states(''sensor.basement_temperature_adjustment'', rounded=True,
+        with_unit=True)|int + 74)|float }}
+
+        '
+      target_temp_low: '{{ (states(''sensor.basement_temperature_adjustment'', rounded=True,
+        with_unit=True)|int + 68)|float }}
+
+        '
+    target:
+      device_id: 04ebda3d245199883493dcb511b07e87
+  - service: input_text.set_value
+    data:
+      value: basement
+    target:
+      entity_id: input_text.temp_adjust_room
+  mode: single
+temp_adjust_kitchen:
+  alias: Temp Adjust Kitchen
+  sequence:
+  - service: climate.set_temperature
+    data:
+      hvac_mode: heat_cool
+      target_temp_high: '{{ (states(''sensor.kitchen_temperature_adjustment'', rounded=True,
+        with_unit=True)|int + 74)|float }}
+
+        '
+      target_temp_low: '{{ (states(''sensor.kitchen_temperature_adjustment'', rounded=True,
+        with_unit=True)|int + 68)|float }}
+
+        '
+    target:
+      device_id: 04ebda3d245199883493dcb511b07e87
+  - service: input_text.set_value
+    data:
+      value: kitchen
+    target:
+      entity_id: input_text.temp_adjust_room
+  mode: single
+temp_adjust_family_room:
+  alias: Temp Adjust Family Room
+  sequence:
+  - service: climate.set_temperature
+    data:
+      hvac_mode: heat_cool
+      target_temp_high: '{{ (states(''sensor.family_room_temperature_adjustment'',
+        rounded=True, with_unit=True)|int + 74)|float }}
+
+        '
+      target_temp_low: '{{ (states(''sensor.family_room_temperature_adjustment'',
+        rounded=True, with_unit=True)|int + 68)|float }}
+
+        '
+    target:
+      device_id: 04ebda3d245199883493dcb511b07e87
+  - service: input_text.set_value
+    data:
+      value: family room
+    target:
+      entity_id: input_text.temp_adjust_room
+  mode: single
+temp_adjust_living_room:
+  alias: Temp Adjust Living Room
+  sequence:
+  - service: climate.set_temperature
+    data:
+      hvac_mode: heat_cool
+      target_temp_high: '{{ (states(''sensor.living_room_temperature_adjustment'',
+        rounded=True, with_unit=True)|int + 74)|float }}
+
+        '
+      target_temp_low: '{{ (states(''sensor.living_room_temperature_adjustment'',
+        rounded=True, with_unit=True)|int + 68)|float }}
+
+        '
+    target:
+      device_id: 04ebda3d245199883493dcb511b07e87
+  - service: input_text.set_value
+    data:
+      value: living room
+    target:
+      entity_id: input_text.temp_adjust_room
+  mode: single
+temp_adjust_master_bedroom:
+  alias: Temp Adjust Master Bedroom
+  sequence:
+  - service: climate.set_temperature
+    data:
+      hvac_mode: heat_cool
+      target_temp_high: '{{ (states(''sensor.master_bedroom_temperature_adjustment'',
+        rounded=True, with_unit=True)|int + 74)|float }}
+
+        '
+      target_temp_low: '{{ (states(''sensor.master_bedroom_temperature_adjustment'',
+        rounded=True, with_unit=True)|int + 68)|float }}
+
+        '
+    target:
+      device_id: 04ebda3d245199883493dcb511b07e87
+  - service: input_text.set_value
+    data:
+      value: master bedroom
+    target:
+      entity_id: input_text.temp_adjust_room
+  mode: single
+temp_normal:
+  alias: Temp Normal
+  sequence:
+  - service: climate.set_temperature
+    data:
+      target_temp_high: 74
+      target_temp_low: 68
+      hvac_mode: heat_cool
+    target:
+      device_id: 04ebda3d245199883493dcb511b07e87
+  - service: input_text.set_value
+    data:
+      value: normal
+    target:
+      entity_id: input_text.temp_adjust_room
+  mode: single
+temp_away:
+  alias: Temp Away
+  sequence:
+  - service: climate.set_temperature
+    data:
+      target_temp_high: 85
+      target_temp_low: 65
+      hvac_mode: heat_cool
+    target:
+      device_id: 04ebda3d245199883493dcb511b07e87
+  - service: input_text.set_value
+    data:
+      value: away
+    target:
+      entity_id: input_text.temp_adjust_room
   mode: single

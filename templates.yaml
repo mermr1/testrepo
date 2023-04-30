@@ -7,38 +7,70 @@
       {{ expand('group.echos') | selectattr('attributes.last_called','eq',True) | first is defined }}
 
 # set temperatures to one decimal point for dashboards      
-  - name: kitchen_temperature
+  - name: Kitchen Temperature
     unique_id: af62fb07-88e1-40a0-a364-3e97e9a1cbe6
     state: >
       {{ (states('sensor.kitchen_temp_sensor_temperature', 'state')|round(1)) }}
-  - name: family_room_temperature
+  - name: Kitchen Temperature Adjustment
+    unique_id: fc0bcf66-1f71-4914-b381-5b750909ff99
+    state: >
+      {{ (68 - states('sensor.kitchen_temp_sensor_temperature','state')|float)|round() }}
+  - name: Family Room Temperature
     unique_id: e055a23b-ae67-456c-9b5f-ceff45ad17c2
     state: >
       {{ (states('sensor.family_room_temp_sensor_temperature', 'state')|round(1)) }}
-  - name: living_room_temperature
+  - name: Family Room Temperature Adjustment
+    unique_id: 55429d52-66a9-40de-9cd4-e7766109400b
+    state: >
+      {{ (68 - states('sensor.family_room_temp_sensor_temperature','state')|float)|round() }}
+  - name: Living Room Temperature
     unique_id: 6c3745bd-a051-4b5d-9fc7-cbfbea6ca972
     state: >
       {{ (states('sensor.living_room_temp_sensor_temperature', 'state')|round(1)) }}
-  - name: guest_room_temperature
+  - name: Living Room Temperature Adjustment
+    unique_id: 717d229a-df95-44e1-be0d-3b3cfed2cc4d
+    state: >
+      {{ (68 - states('sensor.living_room_temp_sensor_temperature','state')|float)|round() }}
+  - name: Guest Room Temperature
     unique_id: 299f0481-d439-49b8-8e0f-41fd05bcc39f
     state: >
       {{ (states('sensor.guest_room_temp_sensor_temperature', 'state')|round(1)) }}
-  - name: master_bedroom_temperature
+  - name: Guest Room Temperature Adjustment
+    unique_id: 3beb12a5-e9d9-4455-8a37-ede0bb60ba47
+    state: >
+      {{ (68 - states('sensor.guest_room_temp_sensor_temperature','state')|float)|round() }}
+  - name: Master Bedroom Temperature
     unique_id: 84d1baa6-9c1f-4259-bba6-963a1390857a
     state: >
       {{ (states('sensor.master_bedroom_temp_sensor_temperature', 'state')|round(1)) }}
-  - name: garage_temperature
+  - name: Master Bedroom Temperature Adjustment
+    unique_id: 8985f746-5474-42b4-bc38-3ee30ae0c740
+    state: >
+      {{ (68 - states('sensor.master_bedroom_temp_sensor_temperature','state')|float)|round() }}
+  - name: Garage Temperature
     unique_id: 39b6216a-37d2-4926-a5fa-760327d73e9b
     state: >
       {{ (states('sensor.garage_motion_sensor_temperature', 'state')|round(1)) }}
-  - name: breezeway_temperature
+  - name: Garage Temperature Adjustment
+    unique_id: 4b237695-453b-4eb0-8016-55e606a1b009
+    state: >
+      {{ (68 - states('sensor.garage_motion_sensor_temperature','state')|float)|round() }}
+  - name: Breezeway Temperature
     unique_id: 7c0ff662-467b-454f-a11a-3c0f9657441c
     state: >
       {{ (states('sensor.breezeway_motion_sensor_temperature', 'state')|round(1)) }}
-  - name: basement_temperature
+  - name: Breezeway Temperature Adjustment
+    unique_id: 5f45af9e-d391-4926-84d1-f5ea16691173
+    state: >
+      {{ (68 - states('sensor.breezeway_motion_sensor_temperature','state')|float)|round() }}
+  - name: Basement Temperature
     unique_id: b4c12dd6-911a-4543-8038-d88a1b8e9837
     state: >
       {{ (states('sensor.bstaircase_motion_sensor_d_temperature', 'state')|round(1)) }}
+  - name: Basement Temperature Adjustment
+    unique_id: ad12387a-8700-4bfc-bad8-a9037dc089fa
+    state: >
+      {{ (68 - states('sensor.bstaircase_motion_sensor_d_temperature','state')|float)|round() }}
   - name: firestone_house_temperature
     unique_id: 75353129-3f50-49ee-b464-00c8f84846c0
     state: >

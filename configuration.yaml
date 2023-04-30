@@ -19,6 +19,8 @@ homeassistant:
 
 cloud:
 
+bluetooth:
+
 # mobile_app:
 
 wake_on_lan:
