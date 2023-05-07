@@ -54,7 +54,7 @@
       - service: switch.turn_on
         data: {}
         target:
-          entity_id: switch.dell_power
+          entity_id: switch.dell_power_on
     - conditions:
       - condition: trigger
         id: light off
@@ -367,15 +367,31 @@
   - platform: webhook
     webhook_id: bed_sensor_mark_off
     id: mark off
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
   - platform: webhook
     webhook_id: bed_sensor_mark_on
     id: mark on
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
   - platform: webhook
     webhook_id: bed_sensor_holly_off
     id: holly off
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
   - platform: webhook
     id: holly on
     webhook_id: bed_sensor_holly_on
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
   - platform: state
     entity_id:
     - binary_sensor.withings_in_bed_holly
@@ -399,15 +415,31 @@
   - platform: webhook
     webhook_id: bed-sensors-d1jJhPAxx0jyIv8X-xkxkJJq
     id: mark off
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
   - platform: webhook
     webhook_id: bed-sensors-yYI0gje9kR7UgsQpidE2Fe5g
     id: mark on
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
   - platform: webhook
     webhook_id: bed-sensors-6GEBCdj2WBsfpsWPxZyN6-xK
     id: holly off
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
   - platform: webhook
     webhook_id: bed-sensors-An9N8ObEgERMN8J_0SF55T_v
     id: holly on
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
   condition: []
   action:
   - choose:
@@ -1258,6 +1290,17 @@
     entity_id: sensor.basement_motion_sensor_battery
     below: 10
     id: low battery
+  - type: not_occupied
+    platform: device
+    device_id: 52e3a2af27ac78d1297aa5b81a486c23
+    entity_id: binary_sensor.hlk_ld2410b_9282_occupancy
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+    id: empty
+    enabled: false
   condition: []
   action:
   - choose:
@@ -1297,6 +1340,14 @@
           title: BATTERY CR2450
           target:
           - 3305243522@vtext.com
+    - conditions:
+      - condition: trigger
+        id: empty
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.basement
   mode: single
 - id: '1675005772753'
   alias: Medicine Reminder
@@ -1405,6 +1456,11 @@
           then:
           - service: script.green_door
             data: {}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
       - service: script.temp_normal
         data: {}
       - service: automation.turn_off
@@ -1557,6 +1613,11 @@
           data: {}
           target:
             entity_id: input_button.green_door_helper_button
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
       - service: script.temp_normal
         data: {}
       - service: automation.turn_off
@@ -2272,22 +2333,22 @@
     data: {}
   - if:
     - condition: state
-      entity_id: weather.firestone_house
+      entity_id: weather.home
       state: lightning-rainy
     - condition: or
       conditions:
       - condition: state
-        entity_id: weather.firestone_house
+        entity_id: weather.home
         state: pouring
       - condition: or
         conditions:
         - condition: state
-          entity_id: weather.firestone_house
+          entity_id: weather.home
           state: rainy
         - condition: or
           conditions:
           - condition: state
-            entity_id: weather.firestone_house
+            entity_id: weather.home
             state: snowy-rainy
     then:
     - service: light.turn_on
@@ -3691,6 +3752,12 @@
     - binary_sensor.blue_garage_door_sensor_contact
     to: 'off'
     id: closed
+  - platform: device
+    device_id: b270b50d5f6f44f6258044a29618be00
+    domain: lock
+    entity_id: lock.garage_door
+    type: locked
+    id: lock
   condition: []
   action:
   - choose:
@@ -3730,6 +3797,19 @@
           data: {}
           target:
             entity_id: lock.garage_door
+    - conditions:
+      - condition: trigger
+        id: lock
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: lock.unlock
+        data: {}
+        target:
+          entity_id: lock.garage_door
   mode: single
 - id: '1682538678007'
   alias: 'Outside Work ON/OFF '
@@ -3847,4 +3927,30 @@
     then:
     - service: script.temp_adjust_master_bedroom
       data: {}
+  mode: single
+- id: '1683313672023'
+  alias: Tag Garage Doors
+  description: open and close garage doors by scanning nfc tag.
+  trigger:
+  - platform: tag
+    tag_id: Green Door
+    id: green
+  - platform: tag
+    tag_id: Blue Door
+    id: blue
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: green
+      sequence:
+      - service: script.green_door
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: blue
+      sequence:
+      - service: script.blue_door
+        data: {}
   mode: single

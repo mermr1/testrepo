@@ -11,9 +11,3 @@
           mdi:home-outline
         {% endif %}
       value_template: "{{ is_state('person.mark','home') or is_state('person.holly','home') or is_state('switch.visitors','on') }}"
-
-- platform: workday
-  country: US
-  workdays: [mon, tue, wed, thu, fri]
-  excludes: [sat, sun, holiday]
-  

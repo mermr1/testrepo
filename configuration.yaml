@@ -1,14 +1,10 @@
 # Loads default set of integrations. Do not remove.
 default_config:
 
-# my:
-
 http:
 # SSL Certificate locations
   ssl_certificate: !secret fullchain
   ssl_key: !secret privkey
-# server host to listen only ipv4 kill ipv6
-#  server_host: 192.168.68.10
 # IP BAN
 #  ip_ban_enabled: true
 #  login_attempts_threshold: 3
@@ -28,14 +24,14 @@ wake_on_lan:
 # Load frontend themes from the themes folder
 frontend:
   themes: !include_dir_merge_named themes
-# see if theis takes care of lovelace uncaught 0:0 in log files
-#  extra_module_url:
-#    - /config/www/community/lovelace-card-mod/card-mod.js
+  extra_module_url:
+    - /local/community/custom-brand-icons/custom-brand-icons.js
 
 # Text to speech
 tts:
   - platform: google_translate
 
+# inclusions
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
@@ -64,7 +60,6 @@ withings:
 #    config:
 #      ingress: core_configurator
 
-# Example configuration.yaml entry
 ifttt:
   key: !secret ifttt_key
 

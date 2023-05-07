@@ -1,6 +1,6 @@
-{% macro weatherReport() %}
+{% macro weatherReportHolly() %}
 
-    Today the weather will be {{ states('weather.firestone_house', 'state') }}
+    Today the weather will be {{ states('weather.home', 'state') }}
     with  a high of {{ states('sensor.hightemp', 'state') }} 
     and a low of {{ states('sensor.lowtemp', 'state') }} degrees.
     Right now it is {{ states('sensor.start_work_condition','state') }}

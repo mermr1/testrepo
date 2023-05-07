@@ -500,3 +500,7 @@
   - name: Family_Room_Remote
     state: >
       {{ state_attr('remote.harmony_hub', 'current_activity') }}
+
+##############
+## switches ##
+##############

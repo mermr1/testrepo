@@ -938,11 +938,11 @@ morning_briefing_holly:
         'briefingGreeting.jinja' import briefingGreeting %} {% from 'choreList.jinja'
         import choreList %} {% from 'cleanup.jinja' import cleanup %} {% from 'DateAndTime.jinja'
         import DateAndTime %} {% from 'getSweepers.jinja' import getSweepers %} {%
-        from 'mailNotify.jinja' import mailNotify %} {% from 'NationalHoliday.jinja'
+        from 'mailNotify.jinja' import mailNotify %}  {% from 'NationalHoliday.jinja'
         import NationalHoliday %} {% from 'Salutations.jinja' import Salutations %}
         {% from 'weatherReport.jinja' import weatherReport %} {% from 'weatherReportHolly.jinja'
         import weatherReportHolly %}\n{# a macro to call all macros :)  #} {%- macro
-        mother_of_all_macros() -%}\n  {{ briefingGreeting() }}\n  {{ weatherReport()
+        mother_of_all_macros() -%}\n  {{ briefingGreeting() }}\n  {{ weatherReportHolly()
         }}\n  {{ birthdayAnnouncement() }}<break time=\"1s\"/>\n  {{ Salutations()
         }}\n  {{ mailNotify() }}\n{%- endmacro -%}\n\n  {# Call the macro  #}\n{{-
         cleanup(mother_of_all_macros()) -}}"

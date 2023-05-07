@@ -3,11 +3,11 @@
 ##################
 
 - platform: wake_on_lan
-  name: "Dell Power"
+  name: "Dell Tower On"
   mac: !secret dellmac
   broadcast_port: 7
-  turn_off:
-    service: button.press
-    data: {}
-    target:
-      entity_id: button.dell_tower_shutdown
+        
+- platform: wake_on_lan
+  name: "ASUS Tower On"
+  mac: !secret asusmac
+  broadcast_port: 7

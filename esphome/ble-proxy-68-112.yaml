@@ -1,6 +1,6 @@
 substitutions:
-  name: esp32-bluetooth-proxy-88ff18
-  friendly_name: Bluetooth Proxy 88ff18
+  name: "ble-proxy-68-112"
+  friendly_name: Bluetooth Proxy 68-112
 packages:
   esphome.bluetooth-proxy: github://esphome/bluetooth-proxies/esp32-generic.yaml@main
 esphome:
