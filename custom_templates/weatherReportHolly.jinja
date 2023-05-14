@@ -1,9 +1,16 @@
 {% macro weatherReportHolly() %}
 
-    Today the weather will be {{ states('weather.home', 'state') }}
-    with  a high of {{ states('sensor.hightemp', 'state') }} 
-    and a low of {{ states('sensor.lowtemp', 'state') }} degrees.
-    Right now it is {{ states('sensor.start_work_condition','state') }}
+{% set condition = '' %}
+{% if is_state('sensor.condition_today','partlycloudy') %}
+{% set condition = 'partly cloudy' %}
+{% else %}
+{% set condition = states('sensor.condition_today') %}
+{% endif %}
+
+    Today the weather will be {{ condition }}
+    with  a high of {{ states('sensor.temp_today', 'state') }} 
+    and a low of {{ states('sensor.templow_today', 'state') }} degrees.
+    Right now it is {{ states('weather.home','state') }}
     and will be {{ states('sensor.end_work_condition','state') }} 
     when you get out of work.
     

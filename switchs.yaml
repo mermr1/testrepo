@@ -5,9 +5,110 @@
 - platform: wake_on_lan
   name: "Dell Tower On"
   mac: !secret dellmac
+  host: !secret dellip
+  broadcast_address: !secret net_broadcast
   broadcast_port: 7
+  turn_off:
+    service: button.press
+    target:
+      entity_id: button.dell_tower_shutdown
+    
         
 - platform: wake_on_lan
   name: "ASUS Tower On"
   mac: !secret asusmac
+  host: !secret asusip
+  broadcast_address: !secret net_broadcast
   broadcast_port: 7
+  turn_off:
+    service: button.press
+    target:
+      entity_id: button.asus_shutdown
+
+- platform: wake_on_lan
+  name: "Plex Server Power"
+  mac: !secret plexmac
+  host: !secret plexip
+  broadcast_address: !secret net_broadcast
+  broadcast_port: 7
+  turn_off:
+    service: button.press
+    target:
+      entity_id: button.plex_satellite_shutdown_2
+
+# example creating custom switch with different icons
+#switch:
+#  - platform: template
+#    switches:
+#      garage:
+#        value_template: "{{ is_state('cover.garage_door', 'on') }}"
+#        turn_on:
+#          service: cover.open_cover
+#          target:
+#            entity_id: cover.garage_door
+#        turn_off:
+#          service: cover.close_cover
+#          target:
+#            entity_id: cover.garage_door
+#        icon_template: >-
+#          {% if is_state('cover.garage_door', 'open') %}
+#            mdi:garage-open
+#          {% else %}
+#            mdi:garage
+#          {% endif %}
+
+- platform: template
+  switches:
+    dell_tower:
+      friendly_name: "Dell Tower"
+      value_template: "{{ is_state('switch.dell_tower', 'on') }}"
+      turn_on:
+        service: switch.turn_on
+        target:
+          entity_id: switch.dell_tower_on
+      turn_off:
+        service: button.press
+        target:
+          entity_id: button.dell_tower_shutdown
+      icon_template: >-
+        {% if is_state('switch.dell_tower', 'on') %}
+          mdi:keyboard
+        {% else %}
+          mdi:keyboard-off
+        {% endif %}
+
+    asus_tower:
+      friendly_name: "Asus Tower"
+      value_template: "{{ is_state('switch.asus_tower', 'on') }}"
+      turn_on:
+        service: switch.turn_on
+        target:
+          entity_id: switch.asus_power
+      turn_off:
+        service: button.press
+        target:
+          entity_id: button.asus_shutdown
+      icon_template: >-
+        {% if is_state('switch.asus_tower', 'on') %}
+          mdi:keyboard
+        {% else %}
+          mdi:keyboard-off
+        {% endif %}
+
+    asus_power_button:
+      friendly_name: "ASUS Power Button"
+      value_template: "{{ is_state('switch.asus_power_button', 'sensor_state', 'on') }}"
+      turn_on:
+        service: switch.turn_on
+        target:
+          entity_id: switch.asus_power
+      turn_off:
+        service: button.press
+        target:
+          entity_id: button.asus_shutdown
+      icon_template: >-
+        {% if is_state('switch.asus_tower_button', 'sensor_state', 'on') %}
+          mdi:keyboard
+        {% else %}
+          mdi:keyboard-off
+        {% endif %}

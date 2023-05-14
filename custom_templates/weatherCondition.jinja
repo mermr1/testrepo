@@ -1,0 +1,9 @@
+#############################
+## set weather for the day ##
+#############################
+
+{% macro weatherCondition() %}
+
+{% set condition_one = state_attr('weather.openweathermap','forecast') [0]['condition'] %}
+
+{% endmacro %}

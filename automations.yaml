@@ -54,7 +54,7 @@
       - service: switch.turn_on
         data: {}
         target:
-          entity_id: switch.dell_power_on
+          entity_id: switch.dell_tower
     - conditions:
       - condition: trigger
         id: light off
@@ -73,10 +73,10 @@
         device_id: fff1787a9e7a855b257b1b8cece4c160
         entity_id: remote.32_tcl_roku_tv
         domain: remote
-      - service: button.press
+      - service: switch.turn_off
         data: {}
         target:
-          entity_id: button.dell_tower_shutdown
+          entity_id: switch.dell_tower
     - conditions:
       - condition: trigger
         id: sink on
@@ -900,6 +900,9 @@
     to: 'off'
     id: 'Off'
     enabled: true
+  - platform: time
+    at: '19:01:00'
+    id: 'On'
   condition: []
   action:
   - choose:
@@ -930,6 +933,9 @@
             - tue
             - mon
             - sun
+          - condition: state
+            entity_id: switch.visitors
+            state: 'off'
         then:
         - service: automation.turn_off
           data:
@@ -949,6 +955,8 @@
             - light.kitchen_cabinets
             - light.kitchen_fan
             - light.kitchen_fridge
+        - service: script.temp_adjust_master_bedroom
+          data: {}
         - if:
           - condition: time
             after: '18:00:00'
@@ -1010,6 +1018,20 @@
             - automation.upstairs_staircase_motion_lights_2
             - automation.basement_motion
             - automation.outside_work_on_off
+        - service: script.temp_normal
+          data: {}
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 15
+            milliseconds: 0
+        - service: climate.set_temperature
+          data:
+            target_temp_high: 74
+            target_temp_low: 64
+            hvac_mode: heat_cool
+          target:
+            entity_id: climate.house
   mode: single
 - id: '1674997041729'
   alias: Battery Check
@@ -1272,6 +1294,21 @@
       data:
         message: Kitchen Motion Sensor 2
         title: BATTERY CR2450
+        target:
+        - 3305243522@vtext.com
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.holly_button_battery
+      below: 10
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Holly Bedside Button
+        title: BATTERY REPLACE (1 x CR2032)
+    - service: notify.email
+      data:
+        message: Holly Bedside Button
+        title: BATTERY CR2032
         target:
         - 3305243522@vtext.com
   mode: single
@@ -2001,6 +2038,11 @@
   - platform: template
     value_template: '{{ now().weekday() == 6 }}'
     id: Sunday
+  - platform: state
+    entity_id:
+    - input_boolean.water_fountain_change
+    to: 'off'
+    id: bird
   condition: []
   action:
   - choose:
@@ -2103,6 +2145,20 @@
             data: {}
             target:
               entity_id: counter.water_fountain_count
+        else:
+        - service: input_boolean.turn_on
+          data: {}
+          target:
+            entity_id: input_boolean.humming_bird_syrup
+        - if:
+          - condition: template
+            value_template: '{{ states(''input_datetime.fountain_date'') == (now()
+              + timedelta(days=1)).strftime(''%Y-%m-%d'') }}'
+          then:
+          - service: input_boolean.turn_on
+            data: {}
+            target:
+              entity_id: input_boolean.humming_bird_syrup
     - conditions:
       - condition: trigger
         id: Tuesday
@@ -2170,6 +2226,14 @@
           entity_id:
           - input_boolean.mop_kitchen
           - input_boolean.kitchen_curtains
+    - conditions:
+      - condition: trigger
+        id: bird
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.humming_bird_syrup
   mode: single
 - id: '1675972683768'
   alias: Tag Assistance
@@ -2372,6 +2436,16 @@
       ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_alice'', ''minute'')
       + 30) }}'
     id: stop
+  - platform: state
+    entity_id:
+    - switch.basement_coffee_plug
+    to: 'on'
+    id: workstart
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_stop_time'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_stop_time'', ''minute''))
+      }}'
+    id: awaystop
   condition: []
   action:
   - choose:
@@ -2386,6 +2460,40 @@
     - conditions:
       - condition: trigger
         id: stop
+      sequence:
+      - service: vacuum.return_to_base
+        data: {}
+        target:
+          entity_id: vacuum.alice
+    - conditions:
+      - condition: trigger
+        id: workstart
+      - condition: not
+        conditions:
+        - condition: zone
+          entity_id: person.holly
+          zone: zone.home
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: switch.visitors
+          state: 'off'
+      sequence:
+      - service: input_datetime.set_datetime
+        data:
+          time: '{{ (now() + timedelta( minutes = 30 )).hour }}:{{ (now() + timedelta(
+            minutes = 30 )).minute }}
+
+            '
+        target:
+          entity_id: input_datetime.sweeper_stop_time
+      - service: vacuum.start
+        data: {}
+        target:
+          entity_id: vacuum.alice
+    - conditions:
+      - condition: trigger
+        id: awaystop
       sequence:
       - service: vacuum.return_to_base
         data: {}
@@ -2593,6 +2701,20 @@
       ''hour'') * 60) + state_attr(''input_datetime.sweeper_time_benson'', ''minute'')
       + 30) }}'
     id: stop
+  - platform: state
+    entity_id:
+    - switch.basement_coffee_plug
+    to: 'on'
+    id: workstart
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
+  - platform: template
+    value_template: '{{ ((now().hour * 60) + (now().minute)) == ((state_attr(''input_datetime.sweeper_stop_time'',
+      ''hour'') * 60) + state_attr(''input_datetime.sweeper_stop_time'', ''minute''))
+      }}'
+    id: awaystop
   condition: []
   action:
   - choose:
@@ -2614,6 +2736,41 @@
         target:
           entity_id:
           - vacuum.benson
+    - conditions:
+      - condition: trigger
+        id: workstart
+      - condition: not
+        conditions:
+        - condition: zone
+          entity_id: person.holly
+          zone: zone.home
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: switch.visitors
+          state: 'off'
+      sequence:
+      - service: input_datetime.set_datetime
+        data:
+          time: '{{ (now() + timedelta( minutes = 30 )).hour }}:{{ (now() + timedelta(
+            minutes = 30 )).minute }}
+
+            '
+        target:
+          entity_id: input_datetime.sweeper_stop_time
+      - service: vacuum.start
+        data: {}
+        target:
+          entity_id:
+          - vacuum.benson
+    - conditions:
+      - condition: trigger
+        id: awaystop
+      sequence:
+      - service: vacuum.return_to_base
+        data: {}
+        target:
+          entity_id: vacuum.benson
   mode: single
 - id: '1678151282756'
   alias: Sweeper Schedule Lurch
@@ -2978,8 +3135,9 @@
           entity_id: input_boolean.upstairs_office_light_status
   mode: single
 - id: '1679505555393'
-  alias: HVAC Fan Assist
+  alias: HVAC Assist
   description: turn on ceiling fans and box fans and vent fans to help with circulation
+    and adjust temperature.
   trigger:
   - platform: template
     value_template: '{{ (state_attr(''climate.house'',''hvac_action'') != ''idle'')
@@ -2989,6 +3147,14 @@
     value_template: '{{ (state_attr(''climate.house'',''hvac_action'') == ''idle'')
       or (state_attr(''climate.house'',''hvac_action'') == ''off'') }}'
     id: fan off
+  - platform: state
+    entity_id:
+    - input_number.nest_temp_high
+    id: change
+  - platform: state
+    entity_id:
+    - input_number.nest_temp_low
+    id: change
   condition: []
   action:
   - choose:
@@ -3013,7 +3179,9 @@
       - service: switch.turn_on
         data: {}
         target:
-          entity_id: switch.vent_fan_plug
+          entity_id:
+          - switch.vent_fan_plug
+          - switch.box_fan_plug
     - conditions:
       - condition: trigger
         id: fan off
@@ -3035,7 +3203,100 @@
       - service: switch.turn_off
         data: {}
         target:
-          entity_id: switch.vent_fan_plug
+          entity_id:
+          - switch.vent_fan_plug
+          - switch.box_fan_plug
+    - conditions:
+      - condition: trigger
+        id: change
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
+      - if:
+        - condition: state
+          entity_id: input_text.temp_adjust_room
+          state: normal
+        then:
+        - service: script.temp_normal
+          data: {}
+        else:
+        - if:
+          - condition: state
+            entity_id: input_text.temp_adjust_room
+            state: kitchen
+          then:
+          - service: script.temp_normal
+            data: {}
+          - delay:
+              hours: 0
+              minutes: 1
+              seconds: 0
+              milliseconds: 0
+          - service: script.temp_adjust_kitchen
+            data: {}
+          else:
+          - if:
+            - condition: state
+              entity_id: input_text.temp_adjust_room
+              state: family room
+            then:
+            - service: script.temp_normal
+              data: {}
+            - delay:
+                hours: 0
+                minutes: 1
+                seconds: 0
+                milliseconds: 0
+            - service: script.temp_adjust_family_room
+              data: {}
+            else:
+            - if:
+              - condition: state
+                entity_id: input_text.temp_adjust_room
+                state: living room
+              then:
+              - service: script.temp_normal
+                data: {}
+              - delay:
+                  hours: 0
+                  minutes: 1
+                  seconds: 0
+                  milliseconds: 0
+              - service: script.temp_adjust_living_room
+                data: {}
+              else:
+              - if:
+                - condition: state
+                  entity_id: input_text.temp_adjust_room
+                  state: basement
+                then:
+                - service: script.temp_normal
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 1
+                    seconds: 0
+                    milliseconds: 0
+                - service: script.temp_adjust_basement
+                  data: {}
+                else:
+                - if:
+                  - condition: state
+                    entity_id: input_text.temp_adjust_room
+                    state: master bedroom
+                  then:
+                  - service: script.temp_normal
+                    data: {}
+                  - delay:
+                      hours: 0
+                      minutes: 1
+                      seconds: 0
+                      milliseconds: 0
+                  - service: script.temp_adjust_master_bedroom
+                    data: {}
   mode: single
 - id: '1679508958053'
   alias: Mail Reminder Announcement
@@ -3953,4 +4214,69 @@
       sequence:
       - service: script.blue_door
         data: {}
+  mode: single
+- id: '1683816098361'
+  alias: Holly Bedside Button
+  description: control ceiling fan and bedside lamp with button.
+  trigger:
+  - platform: device
+    domain: mqtt
+    device_id: 7cb3e5fa8e80fb0b1d26bf8c4bb0fdf5
+    type: click
+    subtype: single
+    discovery_id: 0x00158d000927011b click_single
+    id: single
+  - platform: device
+    domain: mqtt
+    device_id: 7cb3e5fa8e80fb0b1d26bf8c4bb0fdf5
+    type: action
+    subtype: hold
+    discovery_id: 0x00158d000927011b action_hold
+    id: hold
+  - platform: device
+    domain: mqtt
+    device_id: 7cb3e5fa8e80fb0b1d26bf8c4bb0fdf5
+    type: click
+    subtype: double
+    discovery_id: 0x00158d000927011b click_double
+    id: double
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: single
+      sequence:
+      - service: fan.toggle
+        data: {}
+        target:
+          entity_id: fan.master_fan
+    - conditions:
+      - condition: trigger
+        id: double
+      - condition: state
+        entity_id: fan.master_fan
+        state: 'on'
+      sequence:
+      - service: script.master_fan_speed
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: hold
+      sequence:
+      - if:
+        - condition: state
+          entity_id: light.holly_lamp
+          state: 'on'
+        then:
+        - service: light.turn_off
+          data: {}
+          target:
+            entity_id: light.holly_lamp
+        else:
+        - service: light.turn_on
+          data:
+            brightness_pct: 100
+          target:
+            entity_id: light.holly_lamp
   mode: single

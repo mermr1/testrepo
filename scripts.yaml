@@ -1294,43 +1294,9 @@ chore_list:
     data:
       data:
         type: tts
-      message: '{# chore list #}  {% macro choreList() %}   {% if is_state(''input_boolean.clean_sweepers'',''on'')
-        %}   {{ [''Time to clean the sweepers.  '',     ''Sweepers need to be cleaned
-        today.  '',     ''Today is the day to do sweeper maintenance.  ''     ] |
-        random }}   {% endif %}   {% if is_state(''input_boolean.water_fountain_change'',''on'')
-        %}   {{ [''Time to change the water in the cat fountain.  '',     ''The cats
-        would like fresh water today.  '',     ''Fountain water needs changed before
-        it grows algae.  ''     ] | random }}   {% endif %}   {% if is_state(''input_boolean.water_fountain_clean'',''on'')
-        %}   {{ [''The cat fountain needs cleaned, washed, and descaled.  '',     ''Today
-        is the day to wash the cat fountain.  '',     ''Clean out and was the cats
-        water fountain.  ''     ] | random }}   {% endif %}   {% if is_state(''input_boolean.sweep_furniture'',''on'')
-        %}   {{ [''Time to sweep off the furniture.  '',     ''The chair and living
-        room furniture need swept today.  '',     ''Sweep the chair, love seat, and
-        two futons.  ''     ] | random }}   {% endif %}   {% if is_state(''input_boolean.clean_steps'',''on'')
-        %}   {{ [''The steps need swept today.  '',     ''Time to sweep the steps
-        again!  '',     ''Sure hope you feel like sweeping the steps today.  ''     ]
-        | random }}   {% endif %}   {% if is_state(''input_boolean.clean_green_bathroom'',''on'')
-        %}   {{ [''Time to clean the ugly green bathroom and make it pretty again.  '',     ''The
-        green bathroom needs to be cleaned today.  '',     ''That seventies bathroom
-        needs updated, or just cleaned.  ''     ] | random }}   {% endif %}   {% if
-        is_state(''input_boolean.clean_master_bathroom'',''on'') %}   {{ [''Upstairs
-        bathroom needs cleaned.  '',     ''How about you clean the master bathroom
-        today.  '',     ''Holly would like to have her bathroom cleaned.  ''     ]
-        | random }}     {% endif %}     {% if is_state(''input_boolean.dust_house'',''on'')
-        %}     {{ [''I can write my name in the dust because it is so thick.  '',       ''How
-        about you do some dusting today.  '',       ''The house is getting pretty
-        dusty.  ''       ] | random }}     {% endif %}     {% if is_state(''input_boolean.clean_ceiling_fans'',''on'')
-        %}     {{ [''Time to clean the ceiling fans again.  '',       ''Hey, do you
-        think you should clean the ceiling fans?  '',       ''You should see all the
-        dirt the ceiling fans throw arround.  ''       ] | random }}     {% endif
-        %}     {% if is_state(''input_boolean.trash_cans'',''on'') %}     {{ [''Remember
-        to take trash to the curb for pickup.  '',       ''Smells like garbage, must
-        be trash day.  '',       ''Trash day, about time, it was getting ripe.  ''       ]
-        | random }}     {% endif %} {% endmacro %}  {# a macro that removes  empty
-        spaces, and returns formatted text #}  {%- macro cleanup(data) -%}   {%- for
-        item in data.split("\n")  if item | trim != "" -%}     {{ item | trim }}  {%
-        endfor -%} {%- endmacro -%}  {# a macro to call all macros :)  #} {%- macro
-        mother_of_all_macros() -%}   {{ choreList() }} {%- endmacro -%}    {# Call
+      message: '{# chore list #} {% from ''choreList.jinja'' import choreList %}  {%
+        from ''cleanup.jinja'' import cleanup %} {# a macro to call all macros :)  #}  {%-
+        macro mother_of_all_macros() -%} {{ choreList() }} {%- endmacro -%} {# Call
         the macro  #} {{- cleanup(mother_of_all_macros()) -}}'
   mode: single
 holly_phone_alarm:
@@ -1542,12 +1508,12 @@ temp_adjust_basement:
   - service: climate.set_temperature
     data:
       hvac_mode: heat_cool
-      target_temp_high: '{{ (states(''sensor.basement_temperature_adjustment'', rounded=True,
-        with_unit=True)|int + 74)|float }}
+      target_temp_high: '{{ (states(''sensor.basement_temp_high'', rounded=True, with_unit=True)|int)|float
+        }}
 
         '
-      target_temp_low: '{{ (states(''sensor.basement_temperature_adjustment'', rounded=True,
-        with_unit=True)|int + 68)|float }}
+      target_temp_low: '{{ (states(''sensor.basement_temp_low'', rounded=True, with_unit=True)|int)|float
+        }}
 
         '
     target:
@@ -1564,12 +1530,12 @@ temp_adjust_kitchen:
   - service: climate.set_temperature
     data:
       hvac_mode: heat_cool
-      target_temp_high: '{{ (states(''sensor.kitchen_temperature_adjustment'', rounded=True,
-        with_unit=True)|int + 74)|float }}
+      target_temp_high: '{{ (states(''sensor.kitchen_temp_high'', rounded=True, with_unit=True)|int)|float
+        }}
 
         '
-      target_temp_low: '{{ (states(''sensor.kitchen_temperature_adjustment'', rounded=True,
-        with_unit=True)|int + 68)|float }}
+      target_temp_low: '{{ (states(''sensor.kitchen_temp_low'', rounded=True, with_unit=True)|int)|float
+        }}
 
         '
     target:
@@ -1586,12 +1552,12 @@ temp_adjust_family_room:
   - service: climate.set_temperature
     data:
       hvac_mode: heat_cool
-      target_temp_high: '{{ (states(''sensor.family_room_temperature_adjustment'',
-        rounded=True, with_unit=True)|int + 74)|float }}
+      target_temp_high: '{{ (states(''sensor.family_room_temp_high'', rounded=True,
+        with_unit=True)|int)|float }}
 
         '
-      target_temp_low: '{{ (states(''sensor.family_room_temperature_adjustment'',
-        rounded=True, with_unit=True)|int + 68)|float }}
+      target_temp_low: '{{ (states(''sensor.family_room_temp_low'', rounded=True,
+        with_unit=True)|int)|float }}
 
         '
     target:
@@ -1608,12 +1574,12 @@ temp_adjust_living_room:
   - service: climate.set_temperature
     data:
       hvac_mode: heat_cool
-      target_temp_high: '{{ (states(''sensor.living_room_temperature_adjustment'',
-        rounded=True, with_unit=True)|int + 74)|float }}
+      target_temp_high: '{{ (states(''sensor.living_room_temp_high'', rounded=True,
+        with_unit=True)|int)|float }}
 
         '
-      target_temp_low: '{{ (states(''sensor.living_room_temperature_adjustment'',
-        rounded=True, with_unit=True)|int + 68)|float }}
+      target_temp_low: '{{ (states(''sensor.living_room_temp_low'', rounded=True,
+        with_unit=True)|int)|float }}
 
         '
     target:
@@ -1630,12 +1596,12 @@ temp_adjust_master_bedroom:
   - service: climate.set_temperature
     data:
       hvac_mode: heat_cool
-      target_temp_high: '{{ (states(''sensor.master_bedroom_temperature_adjustment'',
-        rounded=True, with_unit=True)|int + 74)|float }}
+      target_temp_high: '{{ (states(''sensor.master_bedroom_temp_high'', rounded=True,
+        with_unit=True)|int)|float }}
 
         '
-      target_temp_low: '{{ (states(''sensor.master_bedroom_temperature_adjustment'',
-        rounded=True, with_unit=True)|int + 68)|float }}
+      target_temp_low: '{{ (states(''sensor.master_bedroom_temp_low'', rounded=True,
+        with_unit=True)|int)|float }}
 
         '
     target:
@@ -1651,8 +1617,14 @@ temp_normal:
   sequence:
   - service: climate.set_temperature
     data:
-      target_temp_high: 74
-      target_temp_low: 68
+      target_temp_high: '{{ states(''input_number.nest_temp_high'',''state'')|float|round()
+        }}
+
+        '
+      target_temp_low: '{{ states(''input_number.nest_temp_low'',''state'')|float|round()
+        }}
+
+        '
       hvac_mode: heat_cool
     target:
       device_id: 04ebda3d245199883493dcb511b07e87
@@ -1678,3 +1650,33 @@ temp_away:
     target:
       entity_id: input_text.temp_adjust_room
   mode: single
+master_fan_speed:
+  alias: Master Fan Speed
+  sequence:
+  - if:
+    - condition: template
+      value_template: '{{ state_attr(''fan.master_fan'',''percentage'') == 33 }}'
+    then:
+    - service: fan.set_percentage
+      data:
+        percentage: 66
+      target:
+        entity_id: fan.master_fan
+    else:
+    - if:
+      - condition: template
+        value_template: '{{ state_attr(''fan.master_fan'',''percentage'') == 66 }}'
+      then:
+      - service: fan.set_percentage
+        data:
+          percentage: 100
+        target:
+          entity_id: fan.master_fan
+      else:
+      - service: fan.set_percentage
+        data:
+          percentage: 33
+        target:
+          entity_id: fan.master_fan
+  mode: single
+  icon: mdi:ceiling-fan

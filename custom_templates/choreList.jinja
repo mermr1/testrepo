@@ -17,6 +17,12 @@
     'Clean out and was the cats water fountain.  '
     ] | random }}
   {% endif %}
+  {% if is_state('input_boolean.humming_bird_syrup','on') %}
+  {{ ['The cats want you to feed there pets.  ',
+    'That humming bird feeder needs refilled.  ',
+    'Birds need some home brew nectar.  '
+    ] | random }}
+  {% endif %}
   {% if is_state('input_boolean.sweep_furniture','on') %}
   {{ ['Time to sweep off the furniture.  ',
     'The chair and living room furniture need swept today.  ',
