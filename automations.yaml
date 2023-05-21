@@ -76,7 +76,7 @@
       - service: switch.turn_off
         data: {}
         target:
-          entity_id: switch.dell_tower
+          entity_id: switch.dell_tower_on
     - conditions:
       - condition: trigger
         id: sink on
@@ -349,14 +349,14 @@
       then:
       - service: light.turn_on
         data:
-          brightness: 255
           transition: 30
+          brightness_pct: 100
         target:
           entity_id: light.master_bathroom
     else:
     - service: light.turn_on
       data:
-        brightness: 65
+        brightness_pct: 25
       target:
         entity_id: light.master_bathroom
   mode: single
@@ -903,6 +903,37 @@
   - platform: time
     at: '19:01:00'
     id: 'On'
+  - platform: state
+    entity_id:
+    - light.family_fan
+    to: 'on'
+    id: night
+  - platform: state
+    entity_id:
+    - fan.family_fan
+    to: 'on'
+    id: night
+  - platform: time
+    at: 07:00:00
+    id: '0700'
+  - platform: event
+    event_type: alexa_actionable_notification
+    id: visitor_yes
+    event_data:
+      event_id: visitor_event
+      event_response_type: ResponseYes
+  - platform: event
+    event_type: alexa_actionable_notification
+    id: visitor_no
+    event_data:
+      event_id: visitor_event
+      event_response_type: ResponseNo
+  - platform: event
+    event_type: alexa_actionable_notification
+    id: visitor_none
+    event_data:
+      event_id: visitor_event
+      event_response_type: ResponseNone
   condition: []
   action:
   - choose:
@@ -993,6 +1024,17 @@
                 | list }}
 
                 '
+        else:
+        - if:
+          - condition: state
+            entity_id: switch.visitors
+            state: 'on'
+          then:
+          - service: script.activate_alexa_actionable_notification
+            data:
+              text: Do you still have visitors?
+              event_id: visitor_event
+              alexa_device: media_player.master_echo
       - service: script.secure_house
         data: {}
     - conditions:
@@ -1018,20 +1060,132 @@
             - automation.upstairs_staircase_motion_lights_2
             - automation.basement_motion
             - automation.outside_work_on_off
-        - service: script.temp_normal
-          data: {}
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 15
-            milliseconds: 0
-        - service: climate.set_temperature
+        - if:
+          - condition: template
+            value_template: '{{ is_state(''input_text.temp_adjust_room'',''nmaster
+              bedroom'') }}'
+          then:
+          - service: script.normal_temperature
+            data: {}
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 15
+              milliseconds: 0
+          - service: input_number.set_value
+            data:
+              value: 65
+            target:
+              entity_id: input_number.nest_temp_low
+    - conditions:
+      - condition: trigger
+        id: night
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: automation.upstairs_staircase_motion_lights_2
+          state: 'off'
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.family_fan
+      - service: fan.turn_off
+        data: {}
+        target:
+          entity_id: fan.family_fan
+    - conditions:
+      - condition: trigger
+        id: '0700'
+      sequence:
+      - service: climate.set_temperature
+        data:
+          target_temp_high: 74
+          target_temp_low: 68
+          hvac_mode: heat_cool
+        target:
+          entity_id: climate.house
+    - conditions:
+      - condition: trigger
+        id: visitor_yes
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.visitors
+      - service: notify.alexa_media_master_echo
+        data:
+          message: Ok Turning off just upstairs lights.
           data:
-            target_temp_high: 74
-            target_temp_low: 64
-            hvac_mode: heat_cool
+            type: tts
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id:
+          - light.coffee_light
+          - light.holly_lamp
+          - light.master_fan
+          - light.upstairs_office
+    - conditions:
+      - condition: trigger
+        id: visitor_no
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.visitors
+      - service: automation.turn_off
+        data:
+          stop_actions: false
+        target:
+          entity_id:
+          - automation.kitchen_motion
+          - automation.landing_test
+          - automation.upstairs_staircase_motion_lights_2
+          - automation.basement_motion
+          - automation.outside_work_on_off
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id:
+          - light.upstairs_office
+          - light.kitchen_cabinets
+          - light.kitchen_fan
+          - light.kitchen_fridge
+      - service: script.temp_adjust_master_bedroom
+        data: {}
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: '{% set reject = [ ''master_fan'', ''holly_lamp'', ''whole_house''
+            ] %} {{ states.light | rejectattr(''object_id'', ''in'', reject) | selectattr(''state'',''eq'',''on'')
+            | map(attribute=''entity_id'') | list }}
+
+            '
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: '{% set reject = [ ''master_fan'', ''holly_lamp'', ''whole_house''
+            ] %} {{ states.light | rejectattr(''object_id'', ''in'', reject) | selectattr(''state'',''eq'',''on'')
+            | map(attribute=''entity_id'') | list }}
+
+            '
+    - conditions:
+      - condition: trigger
+        id: visitor_none
+      sequence:
+      - service: notify.alexa_media
+        data:
+          message: O K you will need to handle lights and automations manually
           target:
-            entity_id: climate.house
+          - media_player.master_echo
+          data:
+            type: tts
   mode: single
 - id: '1674997041729'
   alias: Battery Check
@@ -2038,11 +2192,6 @@
   - platform: template
     value_template: '{{ now().weekday() == 6 }}'
     id: Sunday
-  - platform: state
-    entity_id:
-    - input_boolean.water_fountain_change
-    to: 'off'
-    id: bird
   condition: []
   action:
   - choose:
@@ -2226,14 +2375,6 @@
           entity_id:
           - input_boolean.mop_kitchen
           - input_boolean.kitchen_curtains
-    - conditions:
-      - condition: trigger
-        id: bird
-      sequence:
-      - service: input_boolean.turn_on
-        data: {}
-        target:
-          entity_id: input_boolean.humming_bird_syrup
   mode: single
 - id: '1675972683768'
   alias: Tag Assistance
@@ -2316,15 +2457,25 @@
         id: announcement
       sequence:
       - if:
-        - condition: state
-          entity_id: calendar.trash
-          state: 'on'
+        - condition: and
+          conditions:
+          - condition: state
+            entity_id: input_boolean.trash_cans
+            state: 'on'
+          - condition: state
+            entity_id: calendar.trash
+            state: 'on'
         then:
         - service: script.activate_alexa_actionable_notification
           data:
             text: Did you remember to put the trash cans out for pickup tomorrow?
             event_id: trash_can_event
             alexa_device: media_player.kitchen_echo
+      - service: notify.alexa_media_family_echo
+        data:
+          message: Thanks for taking trash out.
+          data:
+            type: tts
     - conditions:
       - condition: trigger
         id: 'Yes'
@@ -3639,7 +3790,7 @@
             milliseconds: 0
         - service: light.turn_off
           data:
-            transition: 240
+            transition: 30
           target:
             entity_id:
             - light.kitchen
@@ -4079,41 +4230,92 @@
   - platform: state
     entity_id:
     - input_boolean.outside_work
+    id: work
+  - type: not_opened
+    platform: device
+    device_id: b270b50d5f6f44f6258044a29618be00
+    entity_id: binary_sensor.garage_door_open
+    domain: binary_sensor
+    id: lock
+    enabled: false
   condition: []
   action:
-  - if:
-    - condition: state
-      entity_id: input_boolean.outside_work
-      state: 'on'
-    then:
-    - service: automation.turn_on
-      data: {}
-      target:
-        entity_id: automation.outside_work
-    else:
-    - service: automation.turn_off
-      data:
-        stop_actions: false
-      target:
-        entity_id: automation.outside_work
-    - if:
-      - condition: state
-        entity_id: binary_sensor.green_garage_door_sensor_contact
-        state: 'on'
-      then:
-      - service: script.green_door
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: work
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.outside_work
+          state: 'on'
+        then:
+        - service: lock.unlock
+          data: {}
+          target:
+            entity_id: lock.garage_door
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 0
+            milliseconds: 300
+        - service: script.blue_door
+          data: {}
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 0
+            milliseconds: 300
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.outside_work
+        else:
+        - service: automation.turn_off
+          data:
+            stop_actions: false
+          target:
+            entity_id: automation.outside_work
+        - if:
+          - condition: state
+            entity_id: binary_sensor.green_garage_door_sensor_contact
+            state: 'on'
+          then:
+          - service: script.green_door
+            data: {}
+        - if:
+          - condition: state
+            entity_id: binary_sensor.blue_garage_door_sensor_contact
+            state: 'on'
+          then:
+          - service: script.blue_door
+            data: {}
+        - service: lock.unlock
+          data: {}
+          target:
+            entity_id: lock.garage_door
+        - delay:
+            hours: 0
+            minutes: 5
+            seconds: 0
+            milliseconds: 0
+        - service: lock.lock
+          data: {}
+          target:
+            entity_id: lock.house_locks
+    - conditions:
+      - condition: trigger
+        id: lock
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 15
+          milliseconds: 0
+      - service: lock.lock
         data: {}
-    - if:
-      - condition: state
-        entity_id: binary_sensor.blue_garage_door_sensor_contact
-        state: 'on'
-      then:
-      - service: script.blue_door
-        data: {}
-    - service: lock.lock
-      data: {}
-      target:
-        entity_id: lock.house_locks
+        target:
+          entity_id: lock.garage_door
   mode: single
 - id: '1682616369321'
   alias: Home Occupied
@@ -4279,4 +4481,277 @@
             brightness_pct: 100
           target:
             entity_id: light.holly_lamp
+  mode: single
+- id: '1684171685828'
+  alias: Weather Work
+  description: 'set weather for when Holly gets out of work.
+
+    '
+  trigger:
+  - platform: time
+    at: 00:10:00
+  condition: []
+  action:
+  - service: input_text.set_value
+    data:
+      value: '{{ state_attr(''weather.openweathermap'',''forecast'') [6][''condition'']
+        }}'
+    target:
+      entity_id: input_text.weather_condition_work
+  - service: input_number.set_value
+    data:
+      value: '{{ state_attr(''weather.openweathermap'',''forecast'') [6][''temperature'']
+        }}'
+    target:
+      entity_id: input_number.weather_temperature_work
+  mode: single
+- id: '1684431448199'
+  alias: Visitors ON
+  description: turn on visitors when doorbell rings
+  trigger:
+  - type: occupied
+    platform: device
+    device_id: 0ce9b5f7ac710b9519b09723866ccaed
+    entity_id: binary_sensor.porch_door_bell_ding
+    domain: binary_sensor
+  condition:
+  - condition: and
+    conditions:
+    - condition: zone
+      entity_id: person.holly
+      zone: zone.home
+    - condition: zone
+      entity_id: person.mark
+      zone: zone.home
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.visitors
+  mode: single
+- id: '1684439426121'
+  alias: Company Porch Door
+  description: turn on visitors when company arrives.
+  trigger:
+  - type: opened
+    platform: device
+    device_id: 519c891a29ed13cca3d14e46a9b68e00
+    entity_id: binary_sensor.porch_door_open
+    domain: binary_sensor
+  condition:
+  - condition: template
+    value_template: '{{now().strftime("%a %h %d %H:%M %Z %Y") >= as_timestamp(states.sensor.porch_door_bell_last_ding.last_changed)
+      | timestamp_custom("%a %h %d %H:%M %Z %Y") >= (now() - timedelta(minutes=10)).strftime("%a
+      %h %d %H:%M %Z %Y")}}
+
+      '
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.visitors
+  mode: single
+- id: '1684440831875'
+  alias: Who Is Home
+  description: set who is home for greetings and other automations
+  trigger:
+  - platform: zone
+    entity_id: person.holly
+    zone: zone.home
+    event: enter
+    id: enter_holly
+  - platform: zone
+    entity_id: person.holly
+    zone: zone.home
+    event: leave
+    id: leave_holly
+  - platform: zone
+    entity_id: person.mark
+    zone: zone.home
+    event: enter
+    id: enter_mark
+  - platform: zone
+    entity_id: person.mark
+    zone: zone.home
+    event: leave
+    id: leave_mark
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: enter_holly
+      sequence:
+      - if:
+        - condition: state
+          entity_id: person.mark
+          state: home
+        then:
+        - service: input_text.set_value
+          data:
+            value: Mark and Holly
+          target:
+            entity_id: input_text.who_is_home
+        else:
+        - service: input_text.set_value
+          data:
+            value: Holly
+          target:
+            entity_id: input_text.who_is_home
+    - conditions:
+      - condition: trigger
+        id: enter_mark
+      sequence:
+      - if:
+        - condition: state
+          entity_id: person.holly
+          state: home
+        then:
+        - service: input_text.set_value
+          data:
+            value: Mark and Holly
+          target:
+            entity_id: input_text.who_is_home
+        else:
+        - service: input_text.set_value
+          data:
+            value: Mark
+          target:
+            entity_id: input_text.who_is_home
+    - conditions:
+      - condition: trigger
+        id: leave_holly
+      sequence:
+      - if:
+        - condition: state
+          entity_id: person.mark
+          state: home
+        then:
+        - service: input_text.set_value
+          data:
+            value: Mark
+          target:
+            entity_id: input_text.who_is_home
+        else:
+        - service: input_text.set_value
+          data:
+            value: no one
+          target:
+            entity_id: input_text.who_is_home
+    - conditions:
+      - condition: trigger
+        id: leave_mark
+      sequence:
+      - if:
+        - condition: state
+          entity_id: person.holly
+          state: home
+        then:
+        - service: input_text.set_value
+          data:
+            value: Holly
+          target:
+            entity_id: input_text.who_is_home
+        else:
+        - service: input_text.set_value
+          data:
+            value: no one
+          target:
+            entity_id: input_text.who_is_home
+  mode: single
+- id: '1684535780487'
+  alias: Welcome Text for Greeting
+  description: Set who is coming home for greeting in breezeway
+  trigger:
+  - platform: state
+    entity_id:
+    - input_text.who_is_home
+    from: no one
+    to: Mark and Holly
+    id: everyone
+  - platform: state
+    entity_id:
+    - input_text.who_is_home
+    from: Holly
+    to: Mark and Holly
+    id: Mark
+  - platform: state
+    entity_id:
+    - input_text.who_is_home
+    from: Mark
+    to: Mark and Holly
+    id: Holly
+  - platform: state
+    entity_id:
+    - input_text.who_is_home
+    from: no one
+    to: Holly
+    id: Holly
+  - platform: state
+    entity_id:
+    - input_text.who_is_home
+    from: no one
+    to: Mark
+    id: Mark
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: everyone
+      sequence:
+      - service: input_text.set_value
+        data:
+          value: Mark and Holly
+        target:
+          entity_id: input_text.welcome_home
+    - conditions:
+      - condition: trigger
+        id: Mark
+      sequence:
+      - service: input_text.set_value
+        data:
+          value: Mark
+        target:
+          entity_id: input_text.welcome_home
+    - conditions:
+      - condition: trigger
+        id: Holly
+      sequence:
+      - service: input_text.set_value
+        data:
+          value: Holly
+        target:
+          entity_id: input_text.welcome_home
+  mode: single
+- id: '1684536605201'
+  alias: Welcome Home Message
+  description: Greet who ever is coming home.
+  trigger:
+  - type: opened
+    platform: device
+    device_id: b270b50d5f6f44f6258044a29618be00
+    entity_id: binary_sensor.garage_door_open
+    domain: binary_sensor
+  condition:
+  - condition: template
+    value_template: '{{ as_timestamp(states.input_text.who_is_home.last_changed) |
+      timestamp_custom("%a %h %d %H:%M %Z %Y") >= (now() - timedelta(minutes=10)).strftime("%a
+      %h %d %H:%M %Z")}}
+
+      '
+  action:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - service: notify.alexa_media
+    data:
+      message: '{{ [''Welcome home '', ''Happy to see you '', ''Come on in ''] | random
+        }}{{ states(''input_text.welcome_home'',''state'') }}.'
+      target:
+      - media_player.portable_echo
+      data:
+        type: tts
   mode: single

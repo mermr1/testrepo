@@ -11,7 +11,7 @@
     with  a high of {{ states('sensor.temp_today', 'state') }} 
     and a low of {{ states('sensor.templow_today', 'state') }} degrees.
     Right now it is {{ states('weather.home','state') }}
-    and will be {{ states('sensor.end_work_condition','state') }} 
+    and will be {{ states('input_text.weather_condition_work') }} 
     when you get out of work.
     
 {% endmacro %}

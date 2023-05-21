@@ -1680,3 +1680,66 @@ master_fan_speed:
           entity_id: fan.master_fan
   mode: single
   icon: mdi:ceiling-fan
+close_garage:
+  alias: Close Garage
+  sequence:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.green_garage_door_sensor_contact
+      state: 'on'
+    then:
+    - service: script.green_door
+      data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 300
+  - if:
+    - condition: state
+      entity_id: binary_sensor.blue_garage_door_sensor_contact
+      state: 'on'
+    then:
+    - service: script.blue_door
+      data: {}
+  mode: single
+  icon: mdi:garage-variant
+dell_power_off_script:
+  alias: Dell Power Off Script
+  sequence:
+  - if:
+    - condition: state
+      entity_id: input_boolean.dell_upgrade
+      state: 'off'
+    then:
+    - service: button.press
+      data: {}
+      target:
+        entity_id: button.dell_tower_shutdown
+  mode: single
+asus_power_off_script:
+  alias: Asus Power Off Script
+  sequence:
+  - if:
+    - condition: state
+      entity_id: input_boolean.asus_upgrade
+      state: 'off'
+    then:
+    - service: button.press
+      data: {}
+      target:
+        entity_id: button.asus_shutdown
+  mode: single
+plex_power_off_script:
+  alias: Plex Power Off Script
+  sequence:
+  - if:
+    - condition: state
+      entity_id: input_boolean.plex_upgrade
+      state: 'off'
+    then:
+    - service: button.press
+      data: {}
+      target:
+        entity_id: button.plex_satellite_shutdown_2
+  mode: single
