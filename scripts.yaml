@@ -628,7 +628,7 @@ leaving_house_mark:
     else:
     - service: notify.alexa_media_portable_echo
       data:
-        message: Marks garage door is already open.
+        message: Green garage door is already open.
         data:
           type: tts
   mode: single
@@ -657,7 +657,7 @@ leaving_house_holly:
     else:
     - service: notify.alexa_media_portable_echo
       data:
-        message: Hollies garage door is already open
+        message: Blue garage door is already open
         data:
           type: tts
   mode: single

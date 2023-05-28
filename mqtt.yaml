@@ -1,0 +1,18 @@
+###############
+##           ##
+## MQTT yaml ##
+##           ##
+###############
+
+# discovery: true
+
+sensor:
+  - name: "Kitchen Temp MQTT"
+    unique_id: ff876628-b282-4d57-84e9-98e194105045
+    state_topic: "house/kitchen/temperature_f"
+    icon: mdi:thermometer-lines
+
+  - name: "Family Room Temp MQTT"
+    unique_id: 8a4be535-946d-4d73-8ace-08c89711dbfe
+    state_topic: "house/family_room/temperature_f"
+    icon: mdi:thermometer-lines

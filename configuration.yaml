@@ -43,6 +43,7 @@ input_button: !include input_buttons.yaml
 notify: !include notifys.yaml
 template: !include templates.yaml
 switch: !include switchs.yaml
+mqtt: !include mqtt.yaml
 
 # withings entry true every 120 minutes - false every 10 minutes
 withings:

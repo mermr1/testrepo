@@ -10,11 +10,13 @@
   - name: Kitchen Temperature
     unique_id: af62fb07-88e1-40a0-a364-3e97e9a1cbe6
     state: >
+      {% if has_value('sensor.kitchen_temp_sensor_temperature') %}
       {{ (states('sensor.kitchen_temp_sensor_temperature', 'state')|round(1)) }}
+      {% endif %}
   - name: Kitchen Temperature Adjustment
     unique_id: fc0bcf66-1f71-4914-b381-5b750909ff99
     state: >
-      {{ (state_attr('climate.house','current_temperature')|float - states('sensor.kitchen_temp_sensor_temperature','state')|float)|round() }}
+      {{ (state_attr('climate.house','current_temperature')|float - states('sensor.kitchen_temp_mqtt','state')|float)|round() }}
   - name: Kitchen Temp High
     unique_id: c4e3a5ac-4a54-4eec-908a-7d8eca25ac48
     state: >
@@ -26,11 +28,13 @@
   - name: Family Room Temperature
     unique_id: e055a23b-ae67-456c-9b5f-ceff45ad17c2
     state: >
+      {% if has_value('sensor.family_room_temp_sensor_temperature') %}
       {{ (states('sensor.family_room_temp_sensor_temperature', 'state')|round(1)) }}
+      {% endif %}
   - name: Family Room Temperature Adjustment
     unique_id: 55429d52-66a9-40de-9cd4-e7766109400b
     state: >
-      {{ (state_attr('climate.house','current_temperature')|float - states('sensor.family_room_temp_sensor_temperature','state')|float)|round() }}
+      {{ (state_attr('climate.house','current_temperature')|float - states('sensor.family_room_temp_mqtt','state')|float)|round() }}
   - name: Family Room Temp High
     unique_id: 4c2f673f-8590-41ce-a106-f64311df7e43
     state: >

@@ -1,0 +1,39 @@
+#cluster:
+#  autoDiscovery: false
+#  port: 6425
+#  peerAddresses:
+#    - 192.168.68.103:6425
+#    - 192.168.68.111:6425
+#  weight: 10
+#  quorum: 2
+global:
+  instanceName: Basement
+  integrations:
+    - homeAssistant
+    - bluetoothClassic
+    - bluetoothLowEnergy
+homeAssistant:
+  mqttUrl: 'mqtt://192.168.68.10:1883'
+  mqttOptions:
+    username: MQTT-user
+    password: hollyb76
+bluetoothClassic:
+  minRssi:
+    '0C:2F:B0:ED:ED:DF': -10
+    default: -20
+  hciDeviceId: 1
+  addresses:
+    - '0C:2F:B0:ED:ED:DF' # marks galaxy watch s3
+    - 'F4:7D:EF:A5:6C:AC' # mark galaxy phone note9
+bluetoothLowEnergy:
+  allowlist:
+    - d23d8613c3fd44afa5df59e16d1c777f-100-1
+    - 60718bec754845eaad35ef51ecdc3ee9-100-1
+  updateFrequency: 30
+  maxDistance: 10
+  minDiscoveryLogRssi: -30
+  tagOverrides:
+    d23d8613c3fd44afa5df59e16d1c777f-100-1:
+      name: Mark Note BLE
+    60718bec754845eaad35ef51ecdc3ee9-100-1:
+      name: Holly Phone BLE

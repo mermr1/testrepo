@@ -544,23 +544,48 @@
         id: basement coffee
       sequence:
       - if:
-        - condition: state
-          entity_id: input_boolean.basement_coffee_ready
-          state: 'on'
+        - condition: template
+          value_template: '{{ now().weekday() == 0 }}'
         then:
-        - service: script.activate_alexa_actionable_notification
-          data:
-            text: Would you like me to start the coffee?
-            event_id: basement_coffee_event
-            alexa_device: media_player.basement_echo
-        else:
-        - service: notify.alexa_media
-          data:
-            message: If you want coffee, you will need to brew it yourself!
-            target:
-            - media_player.basement_echo
+        - if:
+          - condition: state
+            entity_id: input_boolean.basement_coffee_ready
+            state: 'on'
+          then:
+          - service: script.activate_alexa_actionable_notification
             data:
-              type: tts
+              text: Today is Monday; replace batteries in keyboard and mouse, also,
+                would you like me to start the coffee pot?
+              event_id: basement_coffee_event
+              alexa_device: media_player.basement_echo
+          else:
+          - service: notify.alexa_media
+            data:
+              message: If you want coffee, you will need to brew it yourself! Remember
+                to replace rechargeable batteries.
+              target:
+              - media_player.basement_echo
+              data:
+                type: tts
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.basement_coffee_ready
+            state: 'on'
+          then:
+          - service: script.activate_alexa_actionable_notification
+            data:
+              text: Would you like me to start the coffee?
+              event_id: basement_coffee_event
+              alexa_device: media_player.basement_echo
+          else:
+          - service: notify.alexa_media
+            data:
+              message: If you want coffee, you will need to brew it yourself!
+              target:
+              - media_player.basement_echo
+              data:
+                type: tts
     - conditions:
       - condition: trigger
         id: basement yes
@@ -2299,15 +2324,6 @@
           data: {}
           target:
             entity_id: input_boolean.humming_bird_syrup
-        - if:
-          - condition: template
-            value_template: '{{ states(''input_datetime.fountain_date'') == (now()
-              + timedelta(days=1)).strftime(''%Y-%m-%d'') }}'
-          then:
-          - service: input_boolean.turn_on
-            data: {}
-            target:
-              entity_id: input_boolean.humming_bird_syrup
     - conditions:
       - condition: trigger
         id: Tuesday
@@ -2629,6 +2645,11 @@
         - condition: state
           entity_id: switch.visitors
           state: 'off'
+        - condition: template
+          value_template: '{{ (as_timestamp(now()) - as_timestamp(states.vacuum.alice.last_changed))
+            | timestamp_custom("%H", false)| int >= 5 }}
+
+            '
       sequence:
       - service: input_datetime.set_datetime
         data:
@@ -2900,6 +2921,11 @@
         - condition: state
           entity_id: switch.visitors
           state: 'off'
+        - condition: template
+          value_template: '{{ (as_timestamp(now()) - as_timestamp(states.vacuum.benson.last_changed))
+            | timestamp_custom("%H", false)| int >= 5 }}
+
+            '
       sequence:
       - service: input_datetime.set_datetime
         data:
@@ -4663,66 +4689,59 @@
   alias: Welcome Text for Greeting
   description: Set who is coming home for greeting in breezeway
   trigger:
-  - platform: state
-    entity_id:
-    - input_text.who_is_home
-    from: no one
-    to: Mark and Holly
-    id: everyone
-  - platform: state
-    entity_id:
-    - input_text.who_is_home
-    from: Holly
-    to: Mark and Holly
-    id: Mark
-  - platform: state
-    entity_id:
-    - input_text.who_is_home
-    from: Mark
-    to: Mark and Holly
-    id: Holly
-  - platform: state
-    entity_id:
-    - input_text.who_is_home
-    from: no one
-    to: Holly
-    id: Holly
-  - platform: state
-    entity_id:
-    - input_text.who_is_home
-    from: no one
-    to: Mark
-    id: Mark
+  - platform: zone
+    entity_id: person.holly
+    zone: zone.home
+    event: enter
+    id: holly
+  - platform: zone
+    entity_id: person.mark
+    zone: zone.home
+    event: enter
+    id: mark
   condition: []
   action:
   - choose:
     - conditions:
       - condition: trigger
-        id: everyone
+        id: holly
       sequence:
-      - service: input_text.set_value
-        data:
-          value: Mark and Holly
-        target:
-          entity_id: input_text.welcome_home
+      - if:
+        - condition: template
+          value_template: '{{ states.person.mark.last_changed >= now() - timedelta(
+            minutes = 5 ) }}'
+        then:
+        - service: input_text.set_value
+          data:
+            value: Mark and Holly
+          target:
+            entity_id: input_text.welcome_home
+        else:
+        - service: input_text.set_value
+          data:
+            value: Holly
+          target:
+            entity_id: input_text.welcome_home
     - conditions:
       - condition: trigger
-        id: Mark
+        id: mark
       sequence:
-      - service: input_text.set_value
-        data:
-          value: Mark
-        target:
-          entity_id: input_text.welcome_home
-    - conditions:
-      - condition: trigger
-        id: Holly
-      sequence:
-      - service: input_text.set_value
-        data:
-          value: Holly
-        target:
-          entity_id: input_text.welcome_home
+      - if:
+        - condition: template
+          value_template: '{{ states.person.holly.last_changed >= now() - timedelta(
+            minutes = 5 ) }}'
+        then:
+        - service: input_text.set_value
+          data:
+            value: Mark and Holly
+          target:
+            entity_id: input_text.welcome_home
+        else:
+        - service: input_text.set_value
+          data:
+            value: Mark
+          target:
+            entity_id: input_text.welcome_home
   mode: single
 - id: '1684536605201'
   alias: Welcome Home Message
@@ -4734,17 +4753,33 @@
     entity_id: binary_sensor.garage_door_open
     domain: binary_sensor
   condition:
-  - condition: template
-    value_template: '{{ as_timestamp(states.input_text.who_is_home.last_changed) |
-      timestamp_custom("%a %h %d %H:%M %Z %Y") >= (now() - timedelta(minutes=10)).strftime("%a
-      %h %d %H:%M %Z")}}
+  - condition: and
+    conditions:
+    - condition: template
+      value_template: '{{ as_timestamp(states.input_text.who_is_home.last_changed)
+        | timestamp_custom("%a %h %d %H:%M %Z %Y") >= (now() - timedelta(minutes=10)).strftime("%a
+        %h %d %H:%M %Z")}}
 
-      '
+        '
+    - condition: or
+      conditions:
+      - condition: template
+        value_template: '{{ as_timestamp(states.person.mark.last_changed) | timestamp_custom("%a
+          %h %d %H:%M %Z %Y") >= (now() - timedelta(minutes=10)).strftime("%a %h %d
+          %H:%M %Z")}}
+
+          '
+      - condition: template
+        value_template: '{{ as_timestamp(states.person.holly.last_changed) | timestamp_custom("%a
+          %h %d %H:%M %Z %Y") >= (now() - timedelta(minutes=10)).strftime("%a %h %d
+          %H:%M %Z")}}
+
+          '
   action:
   - delay:
       hours: 0
       minutes: 0
-      seconds: 5
+      seconds: 3
       milliseconds: 0
   - service: notify.alexa_media
     data:
@@ -4754,4 +4789,177 @@
       - media_player.portable_echo
       data:
         type: tts
+  mode: single
+- id: '1684692216507'
+  alias: MQTT Publishing
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.kitchen_temp_sensor_temperature
+    id: kitchentemp
+  - platform: state
+    entity_id:
+    - sensor.family_room_temp_sensor_temperature
+    id: familyroomtemp
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: kitchentemp
+      - condition: template
+        value_template: '{{ has_value(''sensor.kitchen_temp_sensor_temperature'')
+          }}'
+      sequence:
+      - service: mqtt.publish
+        data:
+          qos: 0
+          retain: true
+          topic: house/kitchen/temperature_f
+          payload_template: '{{ (states(''sensor.kitchen_temp_sensor_temperature'',''state'')
+            | round(1)) }}
+
+            '
+    - conditions:
+      - condition: trigger
+        id: familyroomtemp
+      - condition: template
+        value_template: '{{ has_value(''sensor.family_room_temp_sensor_temperature'')
+          }}'
+      sequence:
+      - service: mqtt.publish
+        data:
+          qos: 0
+          retain: false
+          topic: house/family_room/temperature_f
+          payload_template: '{{ (states(''sensor.family_room_temp_sensor_temperature'',''state'')
+            | round(1)) }}
+
+            '
+  mode: single
+- id: '1684957489072'
+  alias: Breezeway Motions
+  description: ''
+  trigger:
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: leaving_house_event
+      event_response_type: ResponseYes
+    id: leaving yes
+  - platform: event
+    event_type: alexa_actionable_notification
+    event_data:
+      event_id: leaving_house_event
+      event_response_type: ResponseNo
+    id: leaving no
+  - platform: state
+    entity_id:
+    - binary_sensor.breezeway_motion_sensor_motion
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+    id: markwatch
+  - platform: event
+    event_type: alexa_actionable_notification
+    id: other yes
+    event_data:
+      event_id: other_door_event
+      event_response_type: ResponseYes
+  - platform: event
+    event_type: alexa_actionable_notification
+    id: other no
+    event_data:
+      event_id: other_door_event
+      event_response_type: ResponseNo
+  condition:
+  - condition: template
+    value_template: '{{ (states.person.mark.last_changed) <= (now() - timedelta(minutes=5))
+      }}'
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: leaving yes
+      sequence:
+      - service: script.leaving_house_mark
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: leaving no
+      sequence:
+      - service: script.activate_alexa_actionable_notification
+        data:
+          text: Mark, are you taking the car now?
+          event_id: other_door_event
+          alexa_device: media_player.portable_echo
+    - conditions:
+      - condition: trigger
+        id: markwatch
+      sequence:
+      - if:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: sensor.mark_note_ble_room_presence
+            state: Corridor
+          - condition: state
+            entity_id: sensor.galaxy_watch_0ddf_room_presence
+            state: Corridor
+        then:
+        - service: script.activate_alexa_actionable_notification
+          data:
+            text: Mark, are you taking the truck now?
+            event_id: leaving_house_event
+            alexa_device: media_player.portable_echo
+    - conditions:
+      - condition: trigger
+        id: other yes
+      sequence:
+      - service: script.leaving_house_holly
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: other no
+      sequence:
+      - service: lock.unlock
+        data: {}
+        target:
+          entity_id: lock.house_locks
+  mode: single
+- id: '1685199519507'
+  alias: NWS TEST
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.nws_alerts
+    above: 1
+  condition: []
+  action:
+  - service: notify.mobile_app_sm_n960u
+    data:
+      message: 'This is a <b><span style="color: red">HTML</span></b> <i>text</i><br><br>This
+        is a text after a new line'
+      title: NWS ALERT
+      data:
+        icon_url: https://github.com/home-assistant/assets/blob/master/logo/logo-small.png?raw=true
+        channel: HA-Alert
+        ledColor: red
+  - service: notify.mobile_app_sm_g960u
+    data:
+      message: TTS
+      data:
+        tts_text: Hello Holly
+  - service: notify.mobile_app_sm_n960u
+    data:
+      message: TTS
+      data:
+        tts_text: '{# chore list #} {% from ''choreList.jinja'' import choreList %}  {%
+          from ''cleanup.jinja'' import cleanup %} {# a macro to call all macros :)  #}  {%-
+          macro mother_of_all_macros() -%} {{ choreList() }} {%- endmacro -%} {# Call
+          the macro  #} {{- cleanup(mother_of_all_macros()) -}}'
+        media_stream: alarm_stream_max
   mode: single
