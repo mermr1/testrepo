@@ -47,14 +47,19 @@
           - switch.wall_left_plug
           - switch.wall_right_plug
           - switch.basement_desk_lamp
-      - type: turn_on
-        device_id: fff1787a9e7a855b257b1b8cece4c160
-        entity_id: remote.32_tcl_roku_tv
-        domain: remote
-      - service: switch.turn_on
-        data: {}
-        target:
-          entity_id: switch.dell_tower
+      - if:
+        - condition: state
+          entity_id: sensor.mark_note_ble_room_presence
+          state: Basement
+        then:
+        - service: switch.turn_on
+          data: {}
+          target:
+            entity_id: switch.dell_tower
+        - type: turn_on
+          device_id: fff1787a9e7a855b257b1b8cece4c160
+          entity_id: remote.32_tcl_roku_tv
+          domain: remote
     - conditions:
       - condition: trigger
         id: light off
@@ -487,7 +492,7 @@
     for:
       hours: 0
       minutes: 0
-      seconds: 2
+      seconds: 30
     id: basement coffee
   - platform: event
     event_type: alexa_actionable_notification
@@ -508,7 +513,7 @@
     for:
       hours: 0
       minutes: 0
-      seconds: 2
+      seconds: 5
     id: upstairs coffee
   - platform: event
     event_type: alexa_actionable_notification
@@ -548,9 +553,14 @@
           value_template: '{{ now().weekday() == 0 }}'
         then:
         - if:
-          - condition: state
-            entity_id: input_boolean.basement_coffee_ready
-            state: 'on'
+          - condition: and
+            conditions:
+            - condition: state
+              entity_id: input_boolean.basement_coffee_ready
+              state: 'on'
+            - condition: state
+              entity_id: sensor.mark_note_ble_room_presence
+              state: Basement
           then:
           - service: script.activate_alexa_actionable_notification
             data:
@@ -567,11 +577,37 @@
               - media_player.basement_echo
               data:
                 type: tts
+          - if:
+            - condition: state
+              entity_id: sensor.mark_note_ble_room_presence
+              state: Basement
+            then:
+            - service: notify.alexa_media
+              data:
+                message: If you want coffee, you will need to brew it yourself! Remember
+                  to replace rechargeable batteries.
+                target:
+                - media_player.basement_echo
+                data:
+                  type: tts
+            else:
+            - service: notify.alexa_media
+              data:
+                message: Hello, how are you doing today?
+                target:
+                - media_player.basement_echo
+                data:
+                  type: tts
         else:
         - if:
-          - condition: state
-            entity_id: input_boolean.basement_coffee_ready
-            state: 'on'
+          - condition: and
+            conditions:
+            - condition: state
+              entity_id: input_boolean.basement_coffee_ready
+              state: 'on'
+            - condition: state
+              entity_id: sensor.mark_note_ble_room_presence
+              state: Basement
           then:
           - service: script.activate_alexa_actionable_notification
             data:
@@ -579,13 +615,26 @@
               event_id: basement_coffee_event
               alexa_device: media_player.basement_echo
           else:
-          - service: notify.alexa_media
-            data:
-              message: If you want coffee, you will need to brew it yourself!
-              target:
-              - media_player.basement_echo
+          - if:
+            - condition: state
+              entity_id: sensor.mark_note_ble_room_presence
+              state: Basement
+            then:
+            - service: notify.alexa_media
               data:
-                type: tts
+                message: If you want coffee, you will need to brew it yourself!
+                target:
+                - media_player.basement_echo
+                data:
+                  type: tts
+            else:
+            - service: notify.alexa_media
+              data:
+                message: Hello, How are you doing today?
+                target:
+                - media_player.basement_echo
+                data:
+                  type: tts
     - conditions:
       - condition: trigger
         id: basement yes
@@ -1983,15 +2032,48 @@
       hours: 0
       minutes: 15
       seconds: 0
+    id: everyone
+  - platform: time
+    at: '23:59:00'
+    id: time
   condition: []
   action:
-  - service: automation.turn_off
-    data:
-      stop_actions: false
-    target:
-      entity_id:
-      - automation.holly_zone
-      - automation.mark_zone
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: everyone
+      sequence:
+      - service: automation.turn_off
+        data:
+          stop_actions: false
+        target:
+          entity_id:
+          - automation.holly_zone
+          - automation.mark_zone
+    - conditions:
+      - condition: trigger
+        id: time
+      sequence:
+      - if:
+        - condition: state
+          entity_id: person.mark
+          state: home
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: false
+          target:
+            entity_id: automation.mark_zone
+      - if:
+        - condition: state
+          entity_id: person.holly
+          state: home
+        then:
+        - service: automation.turn_off
+          data:
+            stop_actions: false
+          target:
+            entity_id: automation.holly_zone
   mode: single
 - id: '1675545910170'
   alias: Aqara Magic Cube
@@ -2332,7 +2414,8 @@
         data: {}
         target:
           entity_id:
-          - input_boolean.clean_steps
+          - input_boolean.sweep_furniture
+          - input_boolean.clean_ceiling_fans
     - conditions:
       - condition: trigger
         id: fountain count
@@ -2363,8 +2446,7 @@
         data: {}
         target:
           entity_id:
-          - input_boolean.sweep_furniture
-          - input_boolean.clean_ceiling_fans
+          - input_boolean.clean_steps
     - conditions:
       - condition: trigger
         id: Thursday
@@ -2391,6 +2473,14 @@
           entity_id:
           - input_boolean.mop_kitchen
           - input_boolean.kitchen_curtains
+    - conditions:
+      - condition: trigger
+        id: Sunday
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.clean_steps
   mode: single
 - id: '1675972683768'
   alias: Tag Assistance
@@ -4876,9 +4966,16 @@
       event_id: other_door_event
       event_response_type: ResponseNo
   condition:
-  - condition: template
-    value_template: '{{ (states.person.mark.last_changed) <= (now() - timedelta(minutes=5))
-      }}'
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: binary_sensor.garage_door_open
+      state: 'off'
+    - condition: template
+      value_template: '{{ (states.person.mark.last_changed) <= (now() - timedelta(minutes=5))
+        }}'
+    - condition: time
+      after: 05:00:00
   action:
   - choose:
     - conditions:
@@ -4886,6 +4983,13 @@
         id: leaving yes
       sequence:
       - service: script.leaving_house_mark
+        data: {}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: script.mark_green
         data: {}
     - conditions:
       - condition: trigger
@@ -4899,6 +5003,16 @@
     - conditions:
       - condition: trigger
         id: markwatch
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: binary_sensor.garage_door_open
+          state: 'off'
+        - condition: template
+          value_template: '{{ (states.person.mark.last_changed) <= (now() - timedelta(minutes=5))
+            }}'
+        - condition: time
+          after: 05:00:00
       sequence:
       - if:
         - condition: or
@@ -4920,6 +5034,13 @@
         id: other yes
       sequence:
       - service: script.leaving_house_holly
+        data: {}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: script.mark_blue
         data: {}
     - conditions:
       - condition: trigger
@@ -4953,6 +5074,7 @@
       message: TTS
       data:
         tts_text: Hello Holly
+    enabled: false
   - service: notify.mobile_app_sm_n960u
     data:
       message: TTS
@@ -4962,4 +5084,35 @@
           macro mother_of_all_macros() -%} {{ choreList() }} {%- endmacro -%} {# Call
           the macro  #} {{- cleanup(mother_of_all_macros()) -}}'
         media_stream: alarm_stream_max
+    enabled: false
+  mode: single
+- id: '1685391095013'
+  alias: RA PI Down
+  description: text Mark when room assistant pizero down for 15 minutes.
+  trigger:
+  - platform: template
+    value_template: '{{ now() - timedelta(minutes=15) >= states.binary_sensor.breezewayra.last_changed
+      }}'
+    id: breezewayRA
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: breezewayRA
+      sequence:
+      - if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: binary_sensor.breezewayra
+            state: 'on'
+        then:
+        - service: notify.email
+          data:
+            message: Breezeway Raspberry Pi has been disconnected for more that 15
+              minutes.
+            title: BreezewayPI
+            target:
+            - 3305243522@vtext.com
   mode: single

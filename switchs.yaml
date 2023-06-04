@@ -13,7 +13,6 @@
     target:
       entity_id: script.dell_power_off_script
     
-        
 - platform: wake_on_lan
   name: "ASUS Tower On"
   mac: !secret asusmac

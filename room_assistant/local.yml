@@ -1,10 +1,11 @@
-#cluster:
-#  autoDiscovery: false
-#  port: 6425
-#  peerAddresses:
-#    - 192.168.68.103:6425
+cluster:
+  autoDiscovery: false
+  port: 6425
+  peerAddresses:
+    - 192.168.68.103:6425 # breezewaypi
 #    - 192.168.68.111:6425
 #  weight: 10
+#  timeout: 60
 #  quorum: 2
 global:
   instanceName: Basement
@@ -15,7 +16,7 @@ global:
 homeAssistant:
   mqttUrl: 'mqtt://192.168.68.10:1883'
   mqttOptions:
-    username: MQTT-user
+    username: basementRA
     password: hollyb76
 bluetoothClassic:
   minRssi:
@@ -24,7 +25,7 @@ bluetoothClassic:
   hciDeviceId: 1
   addresses:
     - '0C:2F:B0:ED:ED:DF' # marks galaxy watch s3
-    - 'F4:7D:EF:A5:6C:AC' # mark galaxy phone note9
+    - 'F4:7D:EF:A5:6C:AC' # marks galaxy phone note9
 bluetoothLowEnergy:
   allowlist:
     - d23d8613c3fd44afa5df59e16d1c777f-100-1
