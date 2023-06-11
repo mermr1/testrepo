@@ -47,19 +47,19 @@
           - switch.wall_left_plug
           - switch.wall_right_plug
           - switch.basement_desk_lamp
-      - if:
-        - condition: state
-          entity_id: sensor.mark_note_ble_room_presence
-          state: Basement
-        then:
-        - service: switch.turn_on
-          data: {}
-          target:
-            entity_id: switch.dell_tower
-        - type: turn_on
-          device_id: fff1787a9e7a855b257b1b8cece4c160
-          entity_id: remote.32_tcl_roku_tv
-          domain: remote
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.dell_tower
+      - type: turn_on
+        device_id: fff1787a9e7a855b257b1b8cece4c160
+        entity_id: remote.32_tcl_roku_tv
+        domain: remote
+      - service: light.turn_on
+        data:
+          brightness_pct: 75
+        target:
+          entity_id: light.hue_white_lamp_1
     - conditions:
       - condition: trigger
         id: light off
@@ -82,6 +82,10 @@
         data: {}
         target:
           entity_id: switch.dell_tower_on
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.hue_white_lamp_1
     - conditions:
       - condition: trigger
         id: sink on
@@ -92,10 +96,9 @@
           entity_id: switch.basement_counter_plug
       - service: light.turn_on
         data:
-          color_name: white
           brightness_pct: 75
         target:
-          entity_id: light.closet_basement
+          entity_id: light.hue_white_lamp_1
     - conditions:
       - condition: trigger
         id: sink off
@@ -104,10 +107,10 @@
         data: {}
         target:
           entity_id: switch.basement_counter_plug
-      - type: turn_off
-        device_id: f3639f9f8eb00285ce52ae1e5a500e56
-        entity_id: light.closet_basement
-        domain: light
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.hue_white_lamp_1
   mode: single
 - id: '1674396254958'
   alias: Basement Office
@@ -546,97 +549,6 @@
   - choose:
     - conditions:
       - condition: trigger
-        id: basement coffee
-      sequence:
-      - if:
-        - condition: template
-          value_template: '{{ now().weekday() == 0 }}'
-        then:
-        - if:
-          - condition: and
-            conditions:
-            - condition: state
-              entity_id: input_boolean.basement_coffee_ready
-              state: 'on'
-            - condition: state
-              entity_id: sensor.mark_note_ble_room_presence
-              state: Basement
-          then:
-          - service: script.activate_alexa_actionable_notification
-            data:
-              text: Today is Monday; replace batteries in keyboard and mouse, also,
-                would you like me to start the coffee pot?
-              event_id: basement_coffee_event
-              alexa_device: media_player.basement_echo
-          else:
-          - service: notify.alexa_media
-            data:
-              message: If you want coffee, you will need to brew it yourself! Remember
-                to replace rechargeable batteries.
-              target:
-              - media_player.basement_echo
-              data:
-                type: tts
-          - if:
-            - condition: state
-              entity_id: sensor.mark_note_ble_room_presence
-              state: Basement
-            then:
-            - service: notify.alexa_media
-              data:
-                message: If you want coffee, you will need to brew it yourself! Remember
-                  to replace rechargeable batteries.
-                target:
-                - media_player.basement_echo
-                data:
-                  type: tts
-            else:
-            - service: notify.alexa_media
-              data:
-                message: Hello, how are you doing today?
-                target:
-                - media_player.basement_echo
-                data:
-                  type: tts
-        else:
-        - if:
-          - condition: and
-            conditions:
-            - condition: state
-              entity_id: input_boolean.basement_coffee_ready
-              state: 'on'
-            - condition: state
-              entity_id: sensor.mark_note_ble_room_presence
-              state: Basement
-          then:
-          - service: script.activate_alexa_actionable_notification
-            data:
-              text: Would you like me to start the coffee?
-              event_id: basement_coffee_event
-              alexa_device: media_player.basement_echo
-          else:
-          - if:
-            - condition: state
-              entity_id: sensor.mark_note_ble_room_presence
-              state: Basement
-            then:
-            - service: notify.alexa_media
-              data:
-                message: If you want coffee, you will need to brew it yourself!
-                target:
-                - media_player.basement_echo
-                data:
-                  type: tts
-            else:
-            - service: notify.alexa_media
-              data:
-                message: Hello, How are you doing today?
-                target:
-                - media_player.basement_echo
-                data:
-                  type: tts
-    - conditions:
-      - condition: trigger
         id: basement yes
       sequence:
       - service: switch.turn_on
@@ -796,6 +708,54 @@
         data: {}
         target:
           entity_id: light.basement
+    - conditions:
+      - condition: trigger
+        id: basement coffee
+        enabled: true
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ now().weekday() == 0 }}'
+        then:
+        - if:
+          - condition: state
+            entity_id: input_boolean.basement_coffee_ready
+            state: 'on'
+          then:
+          - service: script.activate_alexa_actionable_notification
+            data:
+              text: Today is Monday; replace batteries in keyboard and mouse, also,
+                would you like me to start the coffee pot?
+              event_id: basement_coffee_event
+              alexa_device: media_player.basement_echo
+          else:
+          - service: notify.alexa_media
+            data:
+              message: If you want coffee, you will need to brew it yourself! Remember
+                to replace rechargeable batteries.
+              target:
+              - media_player.basement_echo
+              data:
+                type: tts
+        else:
+        - if:
+          - condition: state
+            entity_id: input_boolean.basement_coffee_ready
+            state: 'on'
+          then:
+          - service: script.activate_alexa_actionable_notification
+            data:
+              text: Would you like me to start the coffee pot?
+              event_id: basement_coffee_event
+              alexa_device: media_player.basement_echo
+          else:
+          - service: notify.alexa_media
+            data:
+              message: You will need to brew coffee yourself!
+              target:
+              - media_player.basement_echo
+              data:
+                type: tts
   mode: single
 - id: '1674863381231'
   alias: Medication
@@ -2406,6 +2366,7 @@
           data: {}
           target:
             entity_id: input_boolean.humming_bird_syrup
+          enabled: false
     - conditions:
       - condition: trigger
         id: Tuesday
@@ -5115,4 +5076,182 @@
             title: BreezewayPI
             target:
             - 3305243522@vtext.com
+  mode: single
+- id: '1686235608073'
+  alias: Door Lock Timer automation
+  description: lock garage door after 2 minutes
+  trigger:
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.door_lock_timer
+    id: garage door
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: garage door
+      sequence:
+      - if:
+        - condition: state
+          entity_id: binary_sensor.garage_door_open
+          state: 'off'
+        then:
+        - service: lock.lock
+          data: {}
+          target:
+            entity_id: lock.garage_door
+        else:
+        - service: notify.alexa_media
+          data:
+            message: Please the garage door so I can lock it.
+            target:
+            - media_player.portable_echo
+            data:
+              type: tts
+        - service: timer.start
+          data: {}
+          target:
+            entity_id: timer.door_lock_timer
+  mode: single
+- id: '1686321016224'
+  alias: 'Schedule: Let''''s Encrypt startup'
+  description: Checks daily for ssl certificate update at 12:45 AM
+  trigger:
+  - platform: time
+    at: 00:45:00
+  condition: []
+  action:
+  - service: hassio.addon_start
+    data:
+      addon: core_letsencrypt
+  mode: single
+- id: '1686336593176'
+  alias: SSH Buttons
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_button.breezewayra_stop
+    id: bra stop
+  - platform: state
+    entity_id:
+    - input_button.breezewayra_start
+    id: bra start
+  - platform: state
+    entity_id:
+    - input_button.breezewayra_reboot
+    id: bra reboot
+  - platform: state
+    entity_id:
+    - input_button.breezewayra_shutdown
+    id: bra shutdown
+  - platform: state
+    entity_id:
+    - input_button.livingroomra_reboot
+    id: lra reboot
+  - platform: state
+    entity_id:
+    - input_button.livingroomra_shutdown
+    id: lra shutdown
+  - platform: state
+    entity_id:
+    - input_button.livingroomra_start
+    id: lra start
+  - platform: state
+    entity_id:
+    - input_button.livingroomra_stop
+    id: lra stop
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: bra stop
+      sequence:
+      - service: ssh_command.exec_command
+        data:
+          host: 192.168.68.103
+          port: 22
+          user: mermr1
+          pass: hollyb76
+          command: sudo systemctl stop room-assistant.service
+    - conditions:
+      - condition: trigger
+        id: bra start
+      sequence:
+      - service: ssh_command.exec_command
+        data:
+          host: 192.168.68.103
+          port: 22
+          user: mermr1
+          pass: hollyb76
+          command: sudo systemctl start room-assistant.service
+    - conditions:
+      - condition: trigger
+        id: bra reboot
+      sequence:
+      - service: ssh_command.exec_command
+        data:
+          host: 192.168.68.103
+          port: 22
+          user: mermr1
+          pass: hollyb76
+          command: sudo reboot
+    - conditions:
+      - condition: trigger
+        id: bra shutdown
+      sequence:
+      - service: ssh_command.exec_command
+        data:
+          host: 192.168.68.103
+          port: 22
+          user: mermr1
+          pass: hollyb76
+          command: sudo shutdown
+    - conditions:
+      - condition: trigger
+        id: lra reboot
+      sequence:
+      - service: ssh_command.exec_command
+        data:
+          host: 192.168.68.111
+          port: 22
+          user: mermr1
+          pass: hollyb76
+          command: sudo reboot
+    - conditions:
+      - condition: trigger
+        id: lra shutdown
+      sequence:
+      - service: ssh_command.exec_command
+        data:
+          host: 192.168.68.111
+          port: 22
+          user: mermr1
+          pass: hollyb76
+          command: sudo shutdown
+    - conditions:
+      - condition: trigger
+        id: lra start
+      sequence:
+      - service: ssh_command.exec_command
+        data:
+          host: 192.168.68.111
+          port: 22
+          user: mermr1
+          pass: hollyb76
+          command: sudo systemctl start room-assistant.service
+    - conditions:
+      - condition: trigger
+        id: lra stop
+      sequence:
+      - service: ssh_command.exec_command
+        data:
+          host: 192.168.68.111
+          port: 22
+          user: mermr1
+          pass: hollyb76
+          command: sudo systemctl stop room-assistant.service
   mode: single

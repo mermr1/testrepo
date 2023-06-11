@@ -184,7 +184,7 @@ moon_lamp_off:
   - service: remote.send_command
     data:
       device: Moon Lamp
-    command: 'off'
+      command: 'off'
     target:
       device_id: 687d5dcbc7f9474e09148fb0c4c196fa
   mode: single
@@ -1702,6 +1702,14 @@ close_garage:
     then:
     - service: script.blue_door
       data: {}
+  - service: lock.unlock
+    data: {}
+    target:
+      entity_id: lock.garage_door
+  - service: timer.start
+    data: {}
+    target:
+      entity_id: timer.door_lock_timer
   mode: single
   icon: mdi:garage-variant
 dell_power_off_script:
@@ -1743,3 +1751,18 @@ plex_power_off_script:
       target:
         entity_id: button.plex_satellite_shutdown_2
   mode: single
+temp_open_windows:
+  alias: Temp Open Windows
+  sequence:
+  - service: climate.set_hvac_mode
+    data:
+      hvac_mode: 'off'
+    target:
+      entity_id: climate.house
+  - service: input_text.set_value
+    data:
+      value: window
+    target:
+      entity_id: input_text.temp_adjust_room
+  mode: single
+  icon: mdi:window-open

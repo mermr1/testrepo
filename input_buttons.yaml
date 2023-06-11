@@ -1,1 +1,32 @@
 # input_button
+breezewayra_stop:
+  name: BreezewayRA Stop
+  icon: mdi:bell
+  
+breezewayra_start:
+  name: BreezewayRA Start
+  icon: mdi:bell
+
+breezewayra_reboot:
+  name: BreezewayRA Reboot
+  icon: mdi:bell
+
+breezewayra_shutdown:
+  name: BreezewayRA Shutdown
+  icon: mdi:bell
+  
+livingroomra_stop:
+  name: LivingroomRA Stop
+  icon: mdi:bell
+
+livingroomra_start:
+  name: LivingroomRA Start
+  icon: mdi:bell
+
+livingroomra_shutdown:
+  name: LivingroomRA Shutdown
+  icon: mdi:bell
+
+livingroomra_reboot:
+  name: LivingroomRA Reboot
+  icon: mdi:bell

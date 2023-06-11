@@ -5,6 +5,10 @@ http:
 # SSL Certificate locations
   ssl_certificate: !secret fullchain
   ssl_key: !secret privkey
+# cloudflare
+#  use_x_forwarded_for: true
+#  trusted_proxies:
+#  - 172.30.33.0/24
 # IP BAN
 #  ip_ban_enabled: true
 #  login_attempts_threshold: 3
