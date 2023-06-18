@@ -893,6 +893,10 @@ main_tv_power:
 morning_briefing_mark:
   alias: Morning Briefing Mark
   sequence:
+  - service: media_player.volume_up
+    data: {}
+    target:
+      entity_id: media_player.master_echo
   - service: notify.alexa_media_master_echo
     data:
       data:
@@ -906,13 +910,18 @@ morning_briefing_mark:
         from 'mailNotify.jinja' import mailNotify %} {% from 'NationalHoliday.jinja'
         import NationalHoliday %} {% from 'Salutations.jinja' import Salutations %}
         {% from 'weatherReport.jinja' import weatherReport %} {% from 'weatherReportHolly.jinja'
-        import weatherReportHolly %}\n{# a macro to call all macros :)  #} {%- macro
-        mother_of_all_macros() -%}\n  {{ briefingGreeting() }}  Mark.\n  {{ DateAndTime()
-        }}\n  {{ NationalHoliday() }}\n  {{ weatherReport() }}\n  {{ appAnnouncement()
-        }}\n  {{ BirthCount() }}\n  {{ birthdayAnnouncement() }}\n  {{ getSweepers()
-        }}<break time=\"1s\"/>\n  {{ choreList() }}<break time=\"1s\"/>\n  {{ Salutations()
+        import weatherReportHolly %} {% from 'dadJoke.jinja' import dadJoke %}\n{#
+        a macro to call all macros :)  #} {%- macro mother_of_all_macros() -%}\n  {{
+        briefingGreeting() }}  Mark.\n  {{ DateAndTime() }}\n  {{ dadJoke() }}\n  {{
+        NationalHoliday() }}\n  {{ weatherReport() }}\n  {{ appAnnouncement() }}\n
+        \ {{ BirthCount() }}\n  {{ birthdayAnnouncement() }}\n  {{ getSweepers() }}<break
+        time=\"1s\"/>\n  {{ choreList() }}<break time=\"1s\"/>\n  {{ Salutations()
         }}\n{%- endmacro -%}\n\n  {# Call the macro  #}\n{{- cleanup(mother_of_all_macros())
         -}}"
+  - service: media_player.volume_down
+    data: {}
+    target:
+      entity_id: media_player.master_echo
   mode: single
 sweeper_announcement:
   alias: Sweeper Announcement
@@ -1766,3 +1775,17 @@ temp_open_windows:
       entity_id: input_text.temp_adjust_room
   mode: single
   icon: mdi:window-open
+download_power_off_script:
+  alias: DOWNLOAD Power Off Script
+  sequence:
+  - if:
+    - condition: state
+      state: 'off'
+      entity_id: input_boolean.download_upgrade
+    then:
+    - service: button.press
+      data: {}
+      target:
+        entity_id:
+        - button.download_shutdown
+  mode: single

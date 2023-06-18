@@ -18,9 +18,9 @@
       hue_scenes: []
       hue_type: room
       lights:
-      - bobulb2
       - bobulb3
       - bobulb1
+      - bobulb2
       dynamics: false
       icon: mdi:ceiling-light
       friendly_name: Basement
@@ -35,23 +35,22 @@
       device_class: outlet
       friendly_name: Wall Right Plug
       state: 'off'
-    light.hue_white_lamp_1:
-      effect_list:
-      - None
-      - candle
-      supported_color_modes:
-      - brightness
-      mode: normal
-      dynamics: none
-      friendly_name: Basement Corner
-      supported_features: 44
-      state: 'off'
     switch.basement_desk_lamp:
-      device_class: outlet
+      raw_state: true
       friendly_name: Basement Desk Lamp
       state: 'on'
+    light.basement_corner_light:
+      supported_color_modes:
+      - brightness
+      off_with_transition: false
+      off_brightness: 191
+      friendly_name: Basement Corner Light
+      supported_features: 40
+      state: 'off'
   icon: mdi:microsoft-office
-  metadata: {}
+  metadata:
+    light.basement_corner_light:
+      entity_only: true
 - id: '1676664502728'
   name: Basement Work
   entities:

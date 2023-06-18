@@ -1,0 +1,8 @@
+{% macro riddle() %}
+  {{ states('sensor.riddle') }}
+  <break time="2s"/> 
+  {{ state_attr('sensor.riddle', 'question') }}
+  <break time="5s"/><emphasis level="strong">
+  {{ state_attr('sensor.riddle', 'answer') }}
+  </emphasis>
+{% endmacro %}

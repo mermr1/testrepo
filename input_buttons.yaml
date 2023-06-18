@@ -30,3 +30,7 @@ livingroomra_shutdown:
 livingroomra_reboot:
   name: LivingroomRA Reboot
   icon: mdi:bell
+
+router_reboot:
+  name: Deco Router Reboot
+  icon: mdi:router-wireless

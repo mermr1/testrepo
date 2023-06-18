@@ -43,10 +43,10 @@
         data: {}
         target:
           entity_id:
-          - switch.basement_sink_switch
           - switch.wall_left_plug
           - switch.wall_right_plug
           - switch.basement_desk_lamp
+          - switch.basement_sink_switch
       - service: switch.turn_on
         data: {}
         target:
@@ -59,7 +59,8 @@
         data:
           brightness_pct: 75
         target:
-          entity_id: light.hue_white_lamp_1
+          entity_id:
+          - light.basement_corner_light
     - conditions:
       - condition: trigger
         id: light off
@@ -68,12 +69,12 @@
         data: {}
         target:
           entity_id:
-          - switch.basement_sink_switch
           - switch.wall_left_plug
           - switch.wall_right_plug
           - switch.basement_coffee_plug
           - switch.basement_counter_plug
           - switch.basement_desk_lamp
+          - switch.basement_sink_switch
       - type: turn_off
         device_id: fff1787a9e7a855b257b1b8cece4c160
         entity_id: remote.32_tcl_roku_tv
@@ -85,7 +86,8 @@
       - service: light.turn_off
         data: {}
         target:
-          entity_id: light.hue_white_lamp_1
+          entity_id:
+          - light.basement_corner_light
     - conditions:
       - condition: trigger
         id: sink on
@@ -98,7 +100,8 @@
         data:
           brightness_pct: 75
         target:
-          entity_id: light.hue_white_lamp_1
+          entity_id:
+          - light.basement_corner_light
     - conditions:
       - condition: trigger
         id: sink off
@@ -110,7 +113,8 @@
       - service: light.turn_off
         data: {}
         target:
-          entity_id: light.hue_white_lamp_1
+          entity_id:
+          - light.basement_corner_light
   mode: single
 - id: '1674396254958'
   alias: Basement Office
@@ -544,6 +548,12 @@
       event_id: basement_coffee_event
       event_response_type: ResponseNone
     id: basement none
+  - platform: state
+    entity_id:
+    - sensor.mark_watch_s3_esp
+    to: basement
+    id: basement coffee
+    enabled: false
   condition: []
   action:
   - choose:
@@ -718,9 +728,17 @@
           value_template: '{{ now().weekday() == 0 }}'
         then:
         - if:
-          - condition: state
-            entity_id: input_boolean.basement_coffee_ready
-            state: 'on'
+          - condition: and
+            conditions:
+            - condition: state
+              entity_id: input_boolean.basement_coffee_ready
+              state: 'on'
+            - condition: state
+              entity_id: binary_sensor.basement_motion_sensor_occupancy
+              state: 'on'
+            - condition: state
+              entity_id: sensor.mark_watch_s3_esp
+              state: basement
           then:
           - service: script.activate_alexa_actionable_notification
             data:
@@ -739,9 +757,17 @@
                 type: tts
         else:
         - if:
-          - condition: state
-            entity_id: input_boolean.basement_coffee_ready
-            state: 'on'
+          - condition: and
+            conditions:
+            - condition: state
+              state: 'on'
+              entity_id: input_boolean.basement_coffee_ready
+            - condition: state
+              entity_id: binary_sensor.basement_motion_sensor_occupancy
+              state: 'on'
+            - condition: state
+              entity_id: sensor.mark_watch_s3_esp
+              state: basement
           then:
           - service: script.activate_alexa_actionable_notification
             data:
@@ -749,13 +775,31 @@
               event_id: basement_coffee_event
               alexa_device: media_player.basement_echo
           else:
-          - service: notify.alexa_media
-            data:
-              message: You will need to brew coffee yourself!
-              target:
-              - media_player.basement_echo
+          - if:
+            - condition: or
+              conditions:
+              - condition: state
+                entity_id: sensor.mark_watch_s3_esp
+                state: basement
+              - condition: state
+                entity_id: sensor.mark_phone_esp
+                state: basement
+            then:
+            - service: notify.alexa_media
               data:
-                type: tts
+                message: You will need to brew coffee yourself!
+                target:
+                - media_player.basement_echo
+                data:
+                  type: tts
+            else:
+            - service: notify.alexa_media
+              data:
+                message: Holly, turn off the light when you leave!
+                target:
+                - media_player.basement_echo
+                data:
+                  type: tts
   mode: single
 - id: '1674863381231'
   alias: Medication
@@ -2010,6 +2054,10 @@
           entity_id:
           - automation.holly_zone
           - automation.mark_zone
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.green_door_ask
     - conditions:
       - condition: trigger
         id: time
@@ -2024,6 +2072,10 @@
             stop_actions: false
           target:
             entity_id: automation.mark_zone
+        - service: input_boolean.turn_off
+          data: {}
+          target:
+            entity_id: input_boolean.green_door_ask
       - if:
         - condition: state
           entity_id: person.holly
@@ -2538,11 +2590,16 @@
             text: Did you remember to put the trash cans out for pickup tomorrow?
             event_id: trash_can_event
             alexa_device: media_player.kitchen_echo
-      - service: notify.alexa_media_family_echo
-        data:
-          message: Thanks for taking trash out.
+      - if:
+        - condition: state
+          entity_id: calendar.trash
+          state: 'on'
+        then:
+        - service: notify.alexa_media_family_echo
           data:
-            type: tts
+            message: Thanks for taking trash out.
+            data:
+              type: tts
     - conditions:
       - condition: trigger
         id: 'Yes'
@@ -4467,6 +4524,13 @@
     then:
     - service: script.temp_adjust_master_bedroom
       data: {}
+  - if:
+    - condition: template
+      value_template: '{{ states(''input_text.temp_adjust_room'',''state'') == "window"
+        }}'
+    then:
+    - service: script.temp_open_windows
+      data: {}
   mode: single
 - id: '1683313672023'
   alias: Tag Garage Doors
@@ -4952,6 +5016,15 @@
           milliseconds: 0
       - service: script.mark_green
         data: {}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 2
+          milliseconds: 0
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.green_door_ask
     - conditions:
       - condition: trigger
         id: leaving no
@@ -4974,6 +5047,9 @@
             }}'
         - condition: time
           after: 05:00:00
+        - condition: state
+          entity_id: input_boolean.green_door_ask
+          state: 'off'
       sequence:
       - if:
         - condition: or
@@ -5055,6 +5131,10 @@
     value_template: '{{ now() - timedelta(minutes=15) >= states.binary_sensor.breezewayra.last_changed
       }}'
     id: breezewayRA
+  - platform: template
+    value_template: '{{ now() - timedelta(minutes=15) >= states.binary_sensor.livingroomra.last_changed
+      }}'
+    id: livingroomRA
   condition: []
   action:
   - choose:
@@ -5074,6 +5154,24 @@
             message: Breezeway Raspberry Pi has been disconnected for more that 15
               minutes.
             title: BreezewayPI
+            target:
+            - 3305243522@vtext.com
+    - conditions:
+      - condition: trigger
+        id: livingroomRA
+      sequence:
+      - if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: binary_sensor.livingroomra
+            state: 'on'
+        then:
+        - service: notify.email
+          data:
+            message: Living Room Raspberry Pi has been disconnected for more that
+              15 minutes.
+            title: LivingRoomPI
             target:
             - 3305243522@vtext.com
   mode: single
@@ -5128,8 +5226,8 @@
       addon: core_letsencrypt
   mode: single
 - id: '1686336593176'
-  alias: SSH Buttons
-  description: ''
+  alias: SSH & Buttons
+  description: various buttons
   trigger:
   - platform: state
     entity_id:
@@ -5163,6 +5261,10 @@
     entity_id:
     - input_button.livingroomra_stop
     id: lra stop
+  - platform: state
+    entity_id:
+    - input_button.router_reboot
+    id: router_reboot
   condition: []
   action:
   - choose:
@@ -5254,4 +5356,45 @@
           user: mermr1
           pass: hollyb76
           command: sudo systemctl stop room-assistant.service
+    - conditions:
+      - condition: trigger
+        id: router_reboot
+      sequence:
+      - service: tplink_deco.reboot_deco
+        data:
+          device_id:
+          - 10c2685d2e1e52fb8500110356be8d86
+          - 95a0823f527520f4897fb224c3adfa19
   mode: single
+- id: '1686593789680'
+  alias: Notify New Wifi Device
+  description: ''
+  trigger:
+  - platform: event
+    event_type: entity_registry_updated
+    event_data:
+      action: create
+  condition:
+  - condition: template
+    value_template: '{{ id.split(''.'')[0] == ''device_tracker'' }}'
+  - condition: template
+    value_template: '{{ id in integration_entities(''tplink_deco'') }}'
+  action:
+  - alias: Wait a little while to make sure the entity has updated with new state
+    wait_template: '{{ states(id) not in [''unknown'', ''unavailable''] }}'
+    timeout:
+      minutes: 1
+  - service: notify.mobile_app_sm_n960u
+    data:
+      title: '{{ state_attr(id, ''friendly_name'') or id }} connected to WiFi'
+      message: "{{ id }} connected to {{ state_attr(id, 'interface') }} {{\n  state_attr(id,
+        'connection_type')\n    | regex_replace('band', '')\n    | regex_replace('_',
+        '.')\n    | regex_replace('$', 'G')\n}} through {{ state_attr(id, 'deco_device')
+        }}"
+      data:
+        group: wifi-new-device
+        clickAction: entityId:{{ id }}
+  mode: parallel
+  max: 100
+  variables:
+    id: '{{ trigger.event.data.entity_id }}'

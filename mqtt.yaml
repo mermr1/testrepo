@@ -4,8 +4,6 @@
 ##           ##
 ###############
 
-# discovery: true
-
 sensor:
   - name: "Kitchen Temp MQTT"
     unique_id: ff876628-b282-4d57-84e9-98e194105045

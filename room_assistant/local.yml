@@ -3,10 +3,10 @@ cluster:
   port: 6425
   peerAddresses:
     - 192.168.68.103:6425 # breezewaypi
-#    - 192.168.68.111:6425
-#  weight: 10
+    - 192.168.68.111:6425 # livingroompi
+  weight: 10
 #  timeout: 60
-#  quorum: 2
+  quorum: 2
 global:
   instanceName: Basement
   integrations:
@@ -20,16 +20,27 @@ homeAssistant:
     password: hollyb76
 bluetoothClassic:
   minRssi:
-    '0C:2F:B0:ED:ED:DF': -10
-    default: -20
+    '0C:2F:B0:ED:ED:DF': -10 #-10
+    default: -20 #-20
   hciDeviceId: 1
   addresses:
     - '0C:2F:B0:ED:ED:DF' # marks galaxy watch s3
     - 'F4:7D:EF:A5:6C:AC' # marks galaxy phone note9
+#    - '50:F1:4A:7A:58:F2' # fob one
+  entityOverrides:
+    '0C:2F:B0:ED:ED:DF':
+      id: markwatchbtc
+      name: Mark Watch BTC
+#    '50:F1:4A:7A:58:F2':
+#      id: fobonebtc
+#      name: Fob One BTC
 bluetoothLowEnergy:
+  instanceBeaconEnabled: false
+  hciDeviceId: 1
   allowlist:
     - d23d8613c3fd44afa5df59e16d1c777f-100-1
     - 60718bec754845eaad35ef51ecdc3ee9-100-1
+#    - b0c1a06807e346aae54f42e947011386
   updateFrequency: 30
   maxDistance: 10
   minDiscoveryLogRssi: -30
@@ -38,3 +49,5 @@ bluetoothLowEnergy:
       name: Mark Note BLE
     60718bec754845eaad35ef51ecdc3ee9-100-1:
       name: Holly Phone BLE
+#    b0c1a06807e346aae54f42e947011386:
+#      name: fob one
