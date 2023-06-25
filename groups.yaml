@@ -27,8 +27,8 @@ Internal Doors:
 House In Bed:
   all: true
   entities:
-  - input_boolean.bed_holly
-  - input_boolean.bed_mark
+    - input_boolean.bed_holly
+    - input_boolean.bed_mark
 
 ###list of echo devices
 echos:

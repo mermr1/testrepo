@@ -1659,36 +1659,6 @@ temp_away:
     target:
       entity_id: input_text.temp_adjust_room
   mode: single
-master_fan_speed:
-  alias: Master Fan Speed
-  sequence:
-  - if:
-    - condition: template
-      value_template: '{{ state_attr(''fan.master_fan'',''percentage'') == 33 }}'
-    then:
-    - service: fan.set_percentage
-      data:
-        percentage: 66
-      target:
-        entity_id: fan.master_fan
-    else:
-    - if:
-      - condition: template
-        value_template: '{{ state_attr(''fan.master_fan'',''percentage'') == 66 }}'
-      then:
-      - service: fan.set_percentage
-        data:
-          percentage: 100
-        target:
-          entity_id: fan.master_fan
-      else:
-      - service: fan.set_percentage
-        data:
-          percentage: 33
-        target:
-          entity_id: fan.master_fan
-  mode: single
-  icon: mdi:ceiling-fan
 close_garage:
   alias: Close Garage
   sequence:
@@ -1789,3 +1759,46 @@ download_power_off_script:
         entity_id:
         - button.download_shutdown
   mode: single
+new_master_fan_cycle:
+  alias: New Master Fan Cycle
+  sequence:
+  - if:
+    - condition: template
+      value_template: '{{ states.counter.master_fan_cycle.state|float == 0 }}'
+    then:
+    - service: fan.turn_off
+      data: {}
+      target:
+        entity_id: fan.master_fan
+    else:
+    - if:
+      - condition: template
+        value_template: '{{ states.counter.master_fan_cycle.state|float == 1 }}'
+      then:
+      - service: fan.set_percentage
+        data:
+          percentage: 33
+        target:
+          entity_id: fan.master_fan
+      else:
+      - if:
+        - condition: template
+          value_template: '{{ states.counter.master_fan_cycle.state|float == 2 }}'
+        then:
+        - service: fan.set_percentage
+          data:
+            percentage: 66
+          target:
+            entity_id: fan.master_fan
+        else:
+        - if:
+          - condition: template
+            value_template: '{{ states.counter.master_fan_cycle.state|float == 3 }}'
+          then:
+          - service: fan.set_percentage
+            data:
+              percentage: 100
+            target:
+              entity_id: fan.master_fan
+  mode: single
+  icon: mdi:ceiling-fan

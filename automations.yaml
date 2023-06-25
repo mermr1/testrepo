@@ -582,6 +582,7 @@
           minutes: 0
           seconds: 2
           milliseconds: 0
+        enabled: false
       - if:
         - condition: and
           conditions:
@@ -596,6 +597,7 @@
         then:
         - service: script.temp_adjust_basement
           data: {}
+        enabled: false
     - conditions:
       - condition: trigger
         id: Basement no
@@ -1102,6 +1104,13 @@
                 | list }}
 
                 '
+        - service: automation.turn_off
+          data:
+            stop_actions: true
+          target:
+            entity_id:
+            - automation.bluetooth_test_gone
+            - automation.garage_door_close
         else:
         - if:
           - condition: state
@@ -1155,6 +1164,12 @@
               value: 65
             target:
               entity_id: input_number.nest_temp_low
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id:
+            - automation.bluetooth_test_gone
+            - automation.garage_door_close
     - conditions:
       - condition: trigger
         id: night
@@ -1727,11 +1742,9 @@
             data: {}
       - delay:
           hours: 0
-          minutes: 0
-          seconds: 10
+          minutes: 1
+          seconds: 0
           milliseconds: 0
-      - service: script.temp_normal
-        data: {}
       - service: automation.turn_off
         data:
           stop_actions: true
@@ -1887,8 +1900,15 @@
           minutes: 0
           seconds: 10
           milliseconds: 0
-      - service: script.temp_normal
-        data: {}
+      - if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: input_text.temp_adjust_room
+            state: window
+        then:
+        - service: script.temp_normal
+          data: {}
       - service: automation.turn_off
         data:
           stop_actions: false
@@ -4590,19 +4610,30 @@
       - condition: trigger
         id: single
       sequence:
-      - service: fan.toggle
+      - service: automation.trigger
+        data:
+          skip_condition: true
+        target:
+          entity_id: automation.holly_button_set_fan
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 1
+          milliseconds: 0
+      - service: counter.increment
         data: {}
         target:
-          entity_id: fan.master_fan
+          entity_id: counter.master_fan_cycle
+      - service: script.new_master_fan_cycle
+        data: {}
     - conditions:
       - condition: trigger
         id: double
-      - condition: state
-        entity_id: fan.master_fan
-        state: 'on'
       sequence:
-      - service: script.master_fan_speed
+      - service: light.toggle
         data: {}
+        target:
+          entity_id: light.master_fan
     - conditions:
       - condition: trigger
         id: hold
@@ -4645,30 +4676,6 @@
         }}'
     target:
       entity_id: input_number.weather_temperature_work
-  mode: single
-- id: '1684431448199'
-  alias: Visitors ON
-  description: turn on visitors when doorbell rings
-  trigger:
-  - type: occupied
-    platform: device
-    device_id: 0ce9b5f7ac710b9519b09723866ccaed
-    entity_id: binary_sensor.porch_door_bell_ding
-    domain: binary_sensor
-  condition:
-  - condition: and
-    conditions:
-    - condition: zone
-      entity_id: person.holly
-      zone: zone.home
-    - condition: zone
-      entity_id: person.mark
-      zone: zone.home
-  action:
-  - service: switch.turn_on
-    data: {}
-    target:
-      entity_id: switch.visitors
   mode: single
 - id: '1684439426121'
   alias: Company Porch Door
@@ -5398,3 +5405,226 @@
   max: 100
   variables:
     id: '{{ trigger.event.data.entity_id }}'
+- id: '1687363856812'
+  alias: set holly fan button cycle
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - fan.master_fan
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: fan.master_fan
+      state: 'off'
+    then:
+    - service: counter.set_value
+      data:
+        value: 1
+      target:
+        entity_id: counter.master_fan_cycle
+    else: []
+  mode: single
+- id: '1687364517473'
+  alias: Holly Button Set Fan
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - fan.master_fan
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 15
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: fan.master_fan
+      state: 'off'
+    then:
+    - service: counter.set_value
+      data:
+        value: 0
+      target:
+        entity_id: counter.master_fan_cycle
+    else:
+    - if:
+      - condition: template
+        value_template: '{{ (states.fan.master_fan.state == ''on'') and (state_attr(''fan.master_fan'',''percentage'')
+          == 33) }}'
+      then:
+      - service: counter.set_value
+        data:
+          value: 1
+        target:
+          entity_id: counter.master_fan_cycle
+      else:
+      - if:
+        - condition: template
+          value_template: '{{ (states.fan.master_fan.state == ''on'') and (state_attr(''fan.master_fan'',''percentage'')
+            == 66) }}'
+        then:
+        - service: counter.set_value
+          data:
+            value: 2
+          target:
+            entity_id: counter.master_fan_cycle
+        else:
+        - if:
+          - condition: template
+            value_template: '{{ (states.fan.master_fan.state == ''on'') and (state_attr(''fan.master_fan'',''percentage'')
+              == 100) }}'
+          then:
+          - service: counter.set_value
+            data:
+              value: 3
+            target:
+              entity_id: counter.master_fan_cycle
+  mode: restart
+- id: '1687628583050'
+  alias: Car Home Green
+  description: open garage door and unlock door when truck enters driveway
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.mark_car_esp
+    from: not_home
+    to: garage
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.green_garage_door_sensor_contact
+      state: 'off'
+    then:
+    - service: script.green_door
+      data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: lock.unlock
+    data: {}
+    target:
+      entity_id: lock.garage_door
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    target:
+      entity_id: automation.bluetooth_test
+  mode: single
+- id: '1687628791789'
+  alias: Car Left Garage
+  description: Turn on garage door automation when car leaves
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.mark_car_esp
+    from: garage
+    to: not_home
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+    id: Green Car
+  - platform: state
+    entity_id:
+    - sensor.holly_car_esp
+    from: garage
+    to: not_home
+    id: blue car
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: Green Car
+      sequence:
+      - service: automation.turn_on
+        data: {}
+        target:
+          entity_id: automation.bluetooth_test
+    - conditions:
+      - condition: trigger
+        id: blue car
+      sequence:
+      - service: automation.turn_on
+        data: {}
+        target:
+          entity_id: automation.blue_car_home
+  mode: single
+- id: '1687649121436'
+  alias: Car Home Blue
+  description: 'open garage door and unlock door when blue car in driveway
+
+    '
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.holly_car_esp
+    to: garage
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.blue_garage_door_sensor_contact
+      state: 'off'
+    then:
+    - service: script.blue_door
+      data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: lock.unlock
+    data: {}
+    target:
+      entity_id: lock.garage_door
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    target:
+      entity_id: automation.blue_car_home
+  mode: single
+- id: '1687649807838'
+  alias: Garage Door Close
+  description: close garage door according to leaving home zone
+  trigger:
+  - platform: zone
+    entity_id: person.holly
+    zone: zone.home
+    event: leave
+  - platform: zone
+    entity_id: person.mark
+    zone: zone.home
+    event: leave
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.blue_garage_door_sensor_contact
+      state: 'on'
+    then:
+    - service: script.blue_door
+      data: {}
+    else:
+    - if:
+      - condition: state
+        entity_id: binary_sensor.green_garage_door_sensor_contact
+        state: 'on'
+      then:
+      - service: script.green_door
+        data: {}
+  mode: single

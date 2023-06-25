@@ -66,7 +66,11 @@ withings:
 #      ingress: core_configurator
 
 ifttt:
-  key: !secret ifttt_key
+  key:
+    mross10: !secret ifttt_key_ross9103
+    mrosshahwithings: !secret ifttt_key_hwithings
+    mrosshagreendoor: !secret ifttt_key_greendoor
+    mrosshabluedoor: !secret ifttt_key_bluedoor
 
 # For mounting SMB Network media
 # Note - if the mount doesn't work, substitute vers=3.0 with  vers=1.0 or vers=2.1

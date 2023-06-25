@@ -47,39 +47,53 @@
   away_timeout: 120
 
 - platform: mqtt_room
-  device_id: "samsung:cc5e61dbdbbf"
+  device_id: "iBeacon:f2d3fa15-34f5-000f-c225-7b7c1140ffc0-0-0"
   name: 'Mark Watch S3 esp'
-  state_topic: 'espresense/devices/samsung:cc5e61dbdbbf'
+  state_topic: 'espresense/devices/iBeacon:f2d3fa15-34f5-000f-c225-7b7c1140ffc0-0-0'
   timeout: 10
-  away_timeout: 120
+  away_timeout: 10
 
 - platform: mqtt_room
   device_id: "apple:1005:9-12"
   name: 'iPhone esp'
   state_topic: 'espresense/devices/apple:1005:9-12'
   timeout: 10
-  away_timeout: 120
+  away_timeout: 10
 
 - platform: mqtt_room
   device_id: "iBeacon:d23d8613-c3fd-44af-a5df-59e16d1c777f-100-1"
   name: 'Mark Phone esp'
   state_topic: 'espresense/devices/iBeacon:d23d8613-c3fd-44af-a5df-59e16d1c777f-100-1'
   timeout: 10
-  away_timeout: 120
+  away_timeout: 10
 
 - platform: mqtt_room
   device_id: "iBeacon:60718bec-7548-45ea-ad35-ef51ecdc3ee9-100-1"
   name: 'Holly Phone esp'
   state_topic: 'espresense/devices/iBeacon:60718bec-7548-45ea-ad35-ef51ecdc3ee9-100-1'
   timeout: 10
-  away_timeout: 120
+  away_timeout: 10
 
 - platform: mqtt_room
   device_id: "iBeacon:d775884c-ed66-40fb-af86-bd19e8b048e6-100-1"
   name: 'Samsung A11 esp'
   state_topic: 'espresense/devices/iBeacon:d775884c-ed66-40fb-af86-bd19e8b048e6-100-1'
   timeout: 10
-  away_timeout: 120 
+  away_timeout: 10
+
+- platform: mqtt_room
+  device_id: "iBeacon:426c7565-4368-6172-6d42-6561636f6e73-3838-4949"
+  name: 'Holly Car esp'
+  state_topic: 'espresense/devices/iBeacon:426c7565-4368-6172-6d42-6561636f6e73-3838-4949'
+  timeout: 10
+  away_timeout: 10
+
+- platform: mqtt_room
+  device_id: "iBeacon:426c7565-4368-6172-6d42-6561636f6e73-3839-4950"
+  name: 'Mark Car esp'
+  state_topic: 'espresense/devices/iBeacon:426c7565-4368-6172-6d42-6561636f6e73-3839-4950'
+  timeout: 10
+  away_timeout: 10
 
 
 # sensor check for office lights turning on mid automation/for override
