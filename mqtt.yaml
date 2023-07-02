@@ -14,3 +14,27 @@ sensor:
     unique_id: 8a4be535-946d-4d73-8ace-08c89711dbfe
     state_topic: "house/family_room/temperature_f"
     icon: mdi:thermometer-lines
+
+binary_sensor:
+# One entry per sensor node
+  - unique_id: 'kitchen'
+    name: 'Kitchen'
+    state_topic: espresense/rooms/kitchen/status
+    json_attributes_topic: espresense/rooms/kitchen/telemetry
+    payload_on: online
+    payload_off: offline
+    device_class: connectivity
+  - unique_id: 'living_room'
+    name: 'Living Room'
+    state_topic: espresense/rooms/living_room/status
+    json_attributes_topic: espresense/rooms/living_room/telemetry
+    payload_on: online
+    payload_off: offline
+    device_class: connectivity
+  - unique_id: 'master_bedroom'
+    name: 'Master Bedroom'
+    state_topic: espresense/rooms/master_bedroom/status
+    json_attributes_topic: espresense/rooms/master_bedroom/telemetry
+    payload_on: online
+    payload_off: offline
+    device_class: connectivity

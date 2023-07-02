@@ -1802,3 +1802,36 @@ new_master_fan_cycle:
               entity_id: fan.master_fan
   mode: single
   icon: mdi:ceiling-fan
+netgear_nas_off:
+  alias: Netgear NAS Off
+  sequence:
+  - service: ssh_command.exec_command
+    data:
+      host: 192.168.68.104
+      port: 22
+      user: root
+      pass: hollyb76
+      command: rnutil rn_shutdown
+  mode: single
+basement_coffee_yes:
+  alias: Basement Coffee Yes
+  sequence:
+  - if:
+    - condition: state
+      entity_id: switch.basement_coffee_plug
+      state: 'off'
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.basement_coffee_plug
+    - service: input_boolean.turn_off
+      data: {}
+      target:
+        entity_id: input_boolean.basement_coffee_ready
+    else:
+    - service: input_boolean.turn_off
+      data: {}
+      target:
+        entity_id: input_boolean.basement_coffee_ready
+  mode: single

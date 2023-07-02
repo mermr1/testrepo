@@ -550,10 +550,13 @@
     id: basement none
   - platform: state
     entity_id:
-    - sensor.mark_watch_s3_esp
-    to: basement
-    id: basement coffee
-    enabled: false
+    - switch.basement_coffee_plug
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
+    id: basement bypass
   condition: []
   action:
   - choose:
@@ -561,43 +564,8 @@
       - condition: trigger
         id: basement yes
       sequence:
-      - service: switch.turn_on
+      - service: script.basement_coffee_yes
         data: {}
-        target:
-          entity_id: switch.basement_coffee_plug
-      - service: input_boolean.turn_off
-        data: {}
-        target:
-          entity_id: input_boolean.basement_coffee_ready
-      - service: notify.alexa_media
-        data:
-          message: Coffee should be ready in a few minutes.  Remeber, Good to the
-            last drop!
-          target:
-          - media_player.basement_echo
-          data:
-            type: tts
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 2
-          milliseconds: 0
-        enabled: false
-      - if:
-        - condition: and
-          conditions:
-          - condition: state
-            entity_id: person.mark
-            state: home
-          - condition: not
-            conditions:
-            - condition: state
-              entity_id: person.holly
-              state: home
-        then:
-        - service: script.temp_adjust_basement
-          data: {}
-        enabled: false
     - conditions:
       - condition: trigger
         id: Basement no
@@ -802,6 +770,18 @@
                 - media_player.basement_echo
                 data:
                   type: tts
+    - conditions:
+      - condition: trigger
+        id: basement bypass
+      sequence:
+      - service: script.basement_coffee_yes
+        data: {}
+      - service: notify.alexa_media_basement_echo
+        data:
+          message: Coffee should be ready in a few minutes.  Remember, Good to the
+            last drop!
+          data:
+            type: tts
   mode: single
 - id: '1674863381231'
   alias: Medication
@@ -2590,7 +2570,9 @@
       - service: input_boolean.turn_on
         data: {}
         target:
-          entity_id: input_boolean.trash_cans
+          entity_id:
+          - input_boolean.trash_cans
+          - input_boolean.clean_litterbox
     - conditions:
       - condition: trigger
         id: announcement
@@ -3460,6 +3442,24 @@
     entity_id:
     - input_number.nest_temp_low
     id: change
+  - type: opened
+    platform: device
+    device_id: f7bf880c913327efad1b3dc762f0b265
+    entity_id: binary_sensor.kitchen_sink_window_contact
+    domain: binary_sensor
+    id: windows open
+  - type: not_opened
+    platform: device
+    device_id: f7bf880c913327efad1b3dc762f0b265
+    entity_id: binary_sensor.kitchen_sink_window_contact
+    domain: binary_sensor
+    id: windows closed
+  - platform: state
+    entity_id:
+    - sensor.mark_phone_esp
+    - sensor.mark_watch_s3_esp
+    to: basement
+    id: mark basement
   condition: []
   action:
   - choose:
@@ -3486,7 +3486,7 @@
         target:
           entity_id:
           - switch.vent_fan_plug
-          - switch.box_fan_plug
+          - switch.box_fan_plug_1
     - conditions:
       - condition: trigger
         id: fan off
@@ -3504,13 +3504,14 @@
         - service: switch.turn_off
           data: {}
           target:
-            entity_id: switch.box_fan_plug
+            entity_id:
+            - switch.box_fan_plug_1
       - service: switch.turn_off
         data: {}
         target:
           entity_id:
           - switch.vent_fan_plug
-          - switch.box_fan_plug
+          - switch.box_fan_plug_1
     - conditions:
       - condition: trigger
         id: change
@@ -3602,6 +3603,36 @@
                       milliseconds: 0
                   - service: script.temp_adjust_master_bedroom
                     data: {}
+    - conditions:
+      - condition: trigger
+        id: windows open
+      sequence:
+      - service: script.temp_open_windows
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: windows closed
+      sequence:
+      - service: script.temp_normal
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: mark basement
+      sequence:
+      - if:
+        - condition: and
+          conditions:
+          - condition: not
+            conditions:
+            - condition: state
+              entity_id: person.holly
+              state: home
+            - condition: state
+              entity_id: input_text.temp_adjust_room
+              state: window
+        then:
+        - service: script.temp_adjust_basement
+          data: {}
   mode: single
 - id: '1679508958053'
   alias: Mail Reminder Announcement
@@ -3884,7 +3915,17 @@
     - binary_sensor.kitchen_1_motion_sensor_occupancy
     to: 'off'
     id: no motion
-  condition: []
+  - platform: state
+    entity_id:
+    - sensor.mark_watch_s3_esp
+    - sensor.mark_phone_esp
+    - sensor.holly_phone_esp
+    from: kitchen
+    id: no motion
+  condition:
+  - condition: state
+    entity_id: switch.visitors
+    state: 'off'
   action:
   - choose:
     - conditions:
@@ -3936,6 +3977,17 @@
           - condition: state
             entity_id: binary_sensor.kitchen_2_motion_sensor_occupancy
             state: 'off'
+          - condition: not
+            conditions:
+            - condition: state
+              entity_id: sensor.mark_watch_s3_esp
+              state: kitchen
+            - condition: state
+              entity_id: sensor.mark_phone_esp
+              state: kitchen
+            - condition: state
+              entity_id: sensor.holly_phone_esp
+              state: kitchen
         then:
         - delay:
             hours: 0
@@ -4497,7 +4549,25 @@
           minutes: 2
           seconds: 0
           milliseconds: 0
-      - service: script.temp_away
+      - if:
+        - condition: not
+          conditions:
+          - condition: or
+            conditions:
+            - condition: state
+              entity_id: input_text.temp_adjust_room
+              state: extreme heat
+            - condition: state
+              entity_id: input_text.temp_adjust_room
+              state: extreme cold
+        then:
+        - service: script.temp_away
+          data: {}
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - service: script.temp_normal
         data: {}
   mode: single
 - id: '1682694655208'
@@ -5190,13 +5260,30 @@
     event_type: timer.finished
     event_data:
       entity_id: timer.door_lock_timer
-    id: garage door
-  condition: []
+    id: timer
+  - platform: state
+    entity_id:
+    - binary_sensor.porch_door_open
+    - binary_sensor.garage_door_open
+    to: 'off'
+    id: close
+  condition:
+  - condition: state
+    entity_id: switch.visitors
+    state: 'off'
   action:
   - choose:
     - conditions:
       - condition: trigger
-        id: garage door
+        id: close
+      sequence:
+      - service: timer.start
+        data: {}
+        target:
+          entity_id: timer.door_lock_timer
+    - conditions:
+      - condition: trigger
+        id: timer
       sequence:
       - if:
         - condition: state
@@ -5210,16 +5297,47 @@
         else:
         - service: notify.alexa_media
           data:
-            message: Please the garage door so I can lock it.
+            message: Garage Door is open,... please close the garage door.
             target:
+            - media_player.basement_echo
             - media_player.portable_echo
+            - media_player.garage_echo
+            - media_player.kitchen_echo
+            - media_player.family_echo
+            - media_player.master_echo
             data:
               type: tts
         - service: timer.start
           data: {}
           target:
             entity_id: timer.door_lock_timer
-  mode: single
+      - if:
+        - condition: state
+          entity_id: binary_sensor.porch_door_open
+          state: 'off'
+        then:
+        - service: lock.lock
+          data: {}
+          target:
+            entity_id: lock.porch_door
+        else:
+        - service: notify.alexa_media
+          data:
+            message: Porch Door is open,... please close the porch door.
+            target:
+            - media_player.basement_echo
+            - media_player.portable_echo
+            - media_player.garage_echo
+            - media_player.kitchen_echo
+            - media_player.family_echo
+            - media_player.master_echo
+            data:
+              type: tts
+        - service: timer.start
+          data: {}
+          target:
+            entity_id: timer.door_lock_timer
+  mode: restart
 - id: '1686321016224'
   alias: 'Schedule: Let''''s Encrypt startup'
   description: Checks daily for ssl certificate update at 12:45 AM
@@ -5627,4 +5745,338 @@
       then:
       - service: script.green_door
         data: {}
+  mode: single
+- id: '1687811585224'
+  alias: Family Room Off
+  description: keep light and fan off when not in room
+  trigger:
+  - platform: state
+    entity_id:
+    - light.family_fan
+    to: 'on'
+  - platform: state
+    entity_id:
+    - fan.family_fan
+    to: 'on'
+  condition: []
+  action:
+  - service: fan.turn_off
+    data: {}
+    target:
+      entity_id: fan.family_fan
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 250
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id:
+      - light.family_fan
+      - light.family_room_lamp
+  mode: single
+- id: '1687812210690'
+  alias: Family Room Occupied
+  description: turn family room off automation on and off according to people in family
+    room
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.mark_phone_esp
+    - sensor.mark_watch_s3_esp
+    - sensor.holly_phone_esp
+    from: family_room
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    id: stay off
+  - platform: state
+    entity_id:
+    - sensor.mark_phone_esp
+    - sensor.mark_watch_s3_esp
+    - sensor.holly_phone_esp
+    to: family_room
+    id: stay on
+  - type: motion
+    platform: device
+    device_id: 458236911f300aa48977273efafd27f1
+    entity_id: binary_sensor.family_room_motion_sensor_occupancy
+    domain: binary_sensor
+    id: 'on'
+  - type: no_motion
+    platform: device
+    device_id: 458236911f300aa48977273efafd27f1
+    entity_id: binary_sensor.family_room_motion_sensor_occupancy
+    domain: binary_sensor
+    id: stay off
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: stay off
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: switch.visitors
+          state: 'off'
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: sensor.mark_phone_esp
+            state: family_room
+          - condition: state
+            entity_id: sensor.mark_watch_s3_esp
+            state: family_room
+          - condition: state
+            entity_id: sensor.holly_phone_esp
+            state: family_room
+      sequence:
+      - service: automation.turn_on
+        data: {}
+        target:
+          entity_id: automation.family_room_off
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id:
+          - light.family_fan
+          - light.family_room_lamp
+      - service: fan.turn_off
+        data: {}
+        target:
+          entity_id: fan.family_fan
+      - service: remote.turn_off
+        data: {}
+        target:
+          device_id: 88f67465a2e48f4b8dc487a33c4dccc7
+    - conditions:
+      - condition: trigger
+        id: stay on
+      sequence:
+      - service: automation.turn_off
+        data:
+          stop_actions: true
+        target:
+          entity_id: automation.family_room_off
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - service: automation.turn_off
+        data:
+          stop_actions: true
+        target:
+          entity_id: automation.family_room_off
+  mode: single
+- id: '1687968729807'
+  alias: Chore Reminder
+  description: ''
+  trigger:
+  - platform: time
+    at: '19:10:00'
+  condition:
+  - condition: state
+    entity_id: group.chores
+    state: 'on'
+  action:
+  - service: notify.alexa_media_basement_echo
+    data:
+      message: you forgot some chores
+      data:
+        type: tts
+  mode: single
+- id: '1687990606186'
+  alias: House In Bed
+  description: turn off automaions when eveyone in bed and no visitors.
+  trigger:
+  - platform: state
+    entity_id:
+    - group.house_in_bed
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: switch.visitors
+    state: 'off'
+  action:
+  - service: automation.turn_off
+    data:
+      stop_actions: true
+    target:
+      entity_id:
+      - automation.appliance_cabinet_light
+      - automation.appliance_cabinet_light_manual_override
+      - automation.basement_motion
+      - automation.basement_sink
+      - automation.basement_office
+      - automation.breezeway_motions
+      - automation.bluetooth_test_gone
+      - automation.company
+      - automation.testing_garage_door_webhook_tesing
+      - automation.garage_light_turn_on
+      - automation.garage_door_close
+      - automation.guest_wifi_test
+      - automation.kitchen_motion
+      - automation.landing_test
+      - automation.mail_reminder_announcement
+      - automation.mount_synology_music_folder
+      - automation.outside_work_on_off
+      - automation.automation_63
+      - automation.test_timer
+    enabled: false
+  mode: single
+- id: '1688045830590'
+  alias: Upstairs Extreme Temperatures
+  description: ''
+  trigger:
+  - platform: template
+    value_template: "{{ states.sensor.master_bedroom_temp_sensor_temperature.state
+      <=\n  states.input_number.extreme_temp_low.state }}"
+    id: cold
+  - platform: template
+    value_template: "{{ states.sensor.master_bedroom_temp_sensor_temperature.state
+      >=\n  states.input_number.extreme_temp_high.state }}"
+    id: heat
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: heat
+      sequence:
+      - service: climate.set_temperature
+        data:
+          temperature: 70
+          hvac_mode: cool
+        target:
+          entity_id: climate.house
+      - service: input_text.set_value
+        data:
+          value: extreme heat
+        target:
+          entity_id: input_text.temp_adjust_room
+    - conditions:
+      - condition: trigger
+        id: cold
+      sequence:
+      - service: climate.set_temperature
+        data:
+          temperature: 75
+          hvac_mode: heat
+        target:
+          entity_id: climate.house
+      - service: input_text.set_value
+        data:
+          value: extreme cold
+        target:
+          entity_id: input_text.temp_adjust_room
+  mode: single
+- id: '1688136613279'
+  alias: 'Room Occupancy '
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.mark_phone_esp
+    - sensor.holly_phone_esp
+    - sensor.mark_watch_s3_esp
+    from: master_bedroom
+    id: master leave
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  - platform: state
+    entity_id:
+    - sensor.mark_watch_s3_esp
+    - sensor.mark_phone_esp
+    - sensor.holly_phone_esp
+    from: family_room
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    id: family leave
+  condition:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: switch.visitors
+      state: 'off'
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: master leave
+      - condition: and
+        conditions:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: sensor.mark_phone_esp
+            state: master_bedroom
+          - condition: state
+            entity_id: sensor.holly_phone_esp
+            state: master_bedroom
+          - condition: state
+            entity_id: sensor.mark_watch_s3_esp
+            state: master_bedroom
+        - condition: time
+          before: '17:00:00'
+          weekday:
+          - sat
+          - fri
+          - thu
+          - wed
+          - tue
+          - mon
+          - sun
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id:
+          - light.master_bedroom
+          - light.master_fan
+          - light.master_bathroom
+          - light.holly_lamp
+          - light.coffee_light
+      - service: fan.turn_off
+        data: {}
+        target:
+          entity_id: fan.master_fan
+      - if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: media_player.master_fire_adb
+            state: 'off'
+        then:
+        - service: androidtv.adb_command
+          data:
+            command: SLEEP
+          target:
+            entity_id: media_player.master_fire_adb
+        - service: script.master_tv_power
+          data: {}
+    - conditions:
+      - condition: trigger
+        id: family leave
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id:
+          - light.family_room_lamp
+          - light.family_fan
+      - service: fan.turn_off
+        data: {}
+        target:
+          entity_id: fan.family_fan
+      - service: remote.turn_off
+        data: {}
+        target:
+          entity_id: remote.harmony_hub
   mode: single

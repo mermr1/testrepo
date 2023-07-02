@@ -16,6 +16,8 @@ http:
 homeassistant:
 #  external_url: !secret externalurl
 #  internal_url: !secret internalurl
+  customize: !include customize.yaml
+  packages: !include_dir_named packages
 
 cloud:
 

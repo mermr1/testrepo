@@ -633,3 +633,36 @@
           {%- endif %}
         {%- endfor %}
         {{ ns.occupancy }}
+
+    - name: Master Bedroom Count
+      unique_id: 0cba2d34-441e-438f-ae63-1e6293a8536b
+      state: >-
+        {% set ns = namespace(occupancy=0) %}
+        {%- for sensor in states.sensor %}
+          {%- if 'distance' in sensor.attributes and sensor.state == 'master_bedroom' %}
+            {%- set ns.occupancy = ns.occupancy + 1 %}
+          {%- endif %}
+        {%- endfor %}
+        {{ ns.occupancy }}
+
+    - name: Guest Room Count
+      unique_id: e3d6f732-c8fd-4ca3-b573-a9438261d93a
+      state: >-
+        {% set ns = namespace(occupancy=0) %}
+        {%- for sensor in states.sensor %}
+          {%- if 'distance' in sensor.attributes and sensor.state == 'guest_room' %}
+            {%- set ns.occupancy = ns.occupancy + 1 %}
+          {%- endif %}
+        {%- endfor %}
+        {{ ns.occupancy }}
+
+    - name: Master Suite Count
+      unique_id: 69aa057e-8071-4668-b039-caac220e8e08
+      state: >-
+        {% set ns = namespace(occupancy=0) %}
+        {%- for sensor in states.sensor %}
+          {%- if 'distance' in sensor.attributes and sensor.state == 'master_suite' %}
+            {%- set ns.occupancy = ns.occupancy + 1 %}
+          {%- endif %}
+        {%- endfor %}
+        {{ ns.occupancy }}

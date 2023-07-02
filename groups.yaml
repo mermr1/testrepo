@@ -13,16 +13,16 @@ family_anyone:
     - person.holly
     - person.mark
 
-External Doors:
-  - binary_sensor.blue_garage_door_sensor_contact
-  - binary_sensor.green_garage_door_sensor_contact
-  - binary_sensor.back_garage_door_sensor_contact
-  - binary_sensor.porch_door_open
-  - binary_sensor.back_door_sensor
-  - binary_sensor.front_door_sensor
+#External Doors:
+#  - binary_sensor.blue_garage_door_sensor_contact
+#  - binary_sensor.green_garage_door_sensor_contact
+#  - binary_sensor.back_garage_door_sensor_contact
+#  - binary_sensor.porch_door_open
+#  - binary_sensor.back_door_sensor
+#  - binary_sensor.front_door_sensor
 
-Internal Doors:
-  - binary_sensor.garage_door_open
+#Internal Doors:
+#  - binary_sensor.garage_door_open
 
 House In Bed:
   all: true
@@ -43,3 +43,25 @@ echos:
     - media_player.living_room_echo
     - media_player.master_echo
     - media_player.portable_echo
+
+chores:
+  name: Chores
+  entities:
+    - input_boolean.clean_alice
+    - input_boolean.clean_benson
+    - input_boolean.clean_mr_belvedere
+    - input_boolean.clean_lurch
+    - input_boolean.clean_rosie
+    - input_boolean.water_fountain_change
+    - input_boolean.water_fountain_clean
+    - input_boolean.clean_steps
+    - input_boolean.sweep_furniture
+    - input_boolean.mop_kitchen
+    - input_boolean.clean_green_bathroom
+    - input_boolean.clean_master_bathroom
+    - input_boolean.dust_house
+    - input_boolean.clean_ceiling_fans
+    - input_boolean.kitchen_curtains
+    - input_boolean.trash_cans
+    - input_boolean.humming_bird_syrup
+    - input_boolean.clean_litterbox

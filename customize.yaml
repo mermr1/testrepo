@@ -1,0 +1,28 @@
+###############
+## customize ##
+###############
+
+#binary_sensor.office_chair_occupancy:
+#  icon: mdi:seat-outline
+#  device_class: occupancy
+
+sensor.fob_one_esp:
+  icon: mdi:cat
+
+sensor.fob_two_esp:
+  icon: mdi:cat
+
+sensor.mark_watch_s3_esp:
+  icon: mdi:watch
+
+sensor.mark_phone_esp:
+  icon: mdi:card-account-phone
+
+sensor.holly_phone_esp:
+  icon: mdi:card-account-phone
+
+sensor.holly_car_esp:
+  icon: mdi:car
+
+sensor.mark_car_esp:
+  icon: mdi:car
