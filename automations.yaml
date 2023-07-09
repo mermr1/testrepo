@@ -47,20 +47,36 @@
           - switch.wall_right_plug
           - switch.basement_desk_lamp
           - switch.basement_sink_switch
-      - service: switch.turn_on
-        data: {}
-        target:
-          entity_id: switch.dell_tower
-      - type: turn_on
-        device_id: fff1787a9e7a855b257b1b8cece4c160
-        entity_id: remote.32_tcl_roku_tv
-        domain: remote
       - service: light.turn_on
         data:
           brightness_pct: 75
         target:
           entity_id:
           - light.basement_corner_light
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 15
+          milliseconds: 0
+      - if:
+        - condition: state
+          entity_id: binary_sensor.mark_in_office
+          state: 'on'
+        then:
+        - service: switch.turn_on
+          data: {}
+          target:
+            entity_id: switch.dell_tower
+        - type: turn_on
+          device_id: fff1787a9e7a855b257b1b8cece4c160
+          entity_id: remote.32_tcl_roku_tv
+          domain: remote
+        else:
+        - service: notify.alexa_media_basement_echo
+          data:
+            message: Remember to turn off the lights when you leave!
+            data:
+              type: tts
     - conditions:
       - condition: trigger
         id: light off
@@ -383,6 +399,7 @@
     - POST
     - PUT
     local_only: false
+    enabled: false
   - platform: webhook
     webhook_id: bed_sensor_mark_on
     id: mark on
@@ -390,6 +407,7 @@
     - POST
     - PUT
     local_only: false
+    enabled: false
   - platform: webhook
     webhook_id: bed_sensor_holly_off
     id: holly off
@@ -397,6 +415,7 @@
     - POST
     - PUT
     local_only: false
+    enabled: false
   - platform: webhook
     id: holly on
     webhook_id: bed_sensor_holly_on
@@ -404,6 +423,7 @@
     - POST
     - PUT
     local_only: false
+    enabled: false
   - platform: state
     entity_id:
     - binary_sensor.withings_in_bed_holly
@@ -431,6 +451,7 @@
     - POST
     - PUT
     local_only: false
+    enabled: false
   - platform: webhook
     webhook_id: bed-sensors-yYI0gje9kR7UgsQpidE2Fe5g
     id: mark on
@@ -438,6 +459,7 @@
     - POST
     - PUT
     local_only: false
+    enabled: false
   - platform: webhook
     webhook_id: bed-sensors-6GEBCdj2WBsfpsWPxZyN6-xK
     id: holly off
@@ -445,6 +467,7 @@
     - POST
     - PUT
     local_only: false
+    enabled: false
   - platform: webhook
     webhook_id: bed-sensors-An9N8ObEgERMN8J_0SF55T_v
     id: holly on
@@ -452,6 +475,7 @@
     - POST
     - PUT
     local_only: false
+    enabled: false
   condition: []
   action:
   - choose:
@@ -704,11 +728,8 @@
               entity_id: input_boolean.basement_coffee_ready
               state: 'on'
             - condition: state
-              entity_id: binary_sensor.basement_motion_sensor_occupancy
+              entity_id: binary_sensor.mark_in_office
               state: 'on'
-            - condition: state
-              entity_id: sensor.mark_watch_s3_esp
-              state: basement
           then:
           - service: script.activate_alexa_actionable_notification
             data:
@@ -1554,17 +1575,15 @@
     entity_id: sensor.basement_motion_sensor_battery
     below: 10
     id: low battery
-  - type: not_occupied
-    platform: device
-    device_id: 52e3a2af27ac78d1297aa5b81a486c23
-    entity_id: binary_sensor.hlk_ld2410b_9282_occupancy
-    domain: binary_sensor
+  - platform: state
+    entity_id:
+    - binary_sensor.espresense_office_motion
+    to: 'on'
+    id: motion
     for:
       hours: 0
-      minutes: 10
-      seconds: 0
-    id: empty
-    enabled: false
+      minutes: 0
+      seconds: 30
   condition: []
   action:
   - choose:
@@ -1604,14 +1623,6 @@
           title: BATTERY CR2450
           target:
           - 3305243522@vtext.com
-    - conditions:
-      - condition: trigger
-        id: empty
-      sequence:
-      - service: light.turn_off
-        data: {}
-        target:
-          entity_id: light.basement
   mode: single
 - id: '1675005772753'
   alias: Medicine Reminder
@@ -1689,6 +1700,7 @@
     zone: zone.home
     event: leave
     id: leave
+    enabled: false
   condition: []
   action:
   - choose:
@@ -1720,6 +1732,11 @@
           then:
           - service: script.green_door
             data: {}
+            enabled: false
+          - service: cover.open_cover
+            data: {}
+            target:
+              entity_id: cover.green_opener
       - delay:
           hours: 0
           minutes: 1
@@ -1740,25 +1757,20 @@
           entity_id: lock.house_locks
       - if:
         - condition: state
-          entity_id: input_text.mark_driving
-          state: Blue
+          entity_id: cover.green_opener
+          state: open
         then:
-        - if:
-          - condition: state
-            entity_id: binary_sensor.blue_garage_door_sensor_contact
-            state: 'on'
-          then:
-          - service: script.blue_door
-            data: {}
-          else: []
-        else:
-        - if:
-          - condition: state
-            entity_id: binary_sensor.green_garage_door_sensor_contact
-            state: 'on'
-          then:
-          - service: script.green_door
-            data: {}
+        - service: cover.close_cover
+          data: {}
+          target:
+            entity_id: cover.green_opener
+      - if:
+        - condition: state
+          entity_id: binary_sensor.blue_garage_door_sensor_contact
+          state: 'on'
+        then:
+        - service: script.blue_door
+          data: {}
   mode: single
 - id: '1675278357388'
   alias: Low Battery Level Check
@@ -1836,6 +1848,7 @@
     zone: zone.home
     event: leave
     id: leave
+    enabled: false
   condition: []
   action:
   - choose:
@@ -2040,6 +2053,24 @@
   - platform: time
     at: '23:59:00'
     id: time
+  - platform: state
+    entity_id:
+    - person.holly
+    to: home
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+    id: holly
+  - platform: state
+    entity_id:
+    - person.mark
+    to: home
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+    id: mark
   condition: []
   action:
   - choose:
@@ -2054,10 +2085,6 @@
           entity_id:
           - automation.holly_zone
           - automation.mark_zone
-      - service: input_boolean.turn_off
-        data: {}
-        target:
-          entity_id: input_boolean.green_door_ask
     - conditions:
       - condition: trigger
         id: time
@@ -2086,6 +2113,24 @@
             stop_actions: false
           target:
             entity_id: automation.holly_zone
+    - conditions:
+      - condition: trigger
+        id: holly
+      sequence:
+      - service: automation.turn_off
+        data:
+          stop_actions: true
+        target:
+          entity_id: automation.holly_zone
+    - conditions:
+      - condition: trigger
+        id: mark
+      sequence:
+      - service: automation.turn_off
+        data:
+          stop_actions: true
+        target:
+          entity_id: automation.mark_zone
   mode: single
 - id: '1675545910170'
   alias: Aqara Magic Cube
@@ -2283,7 +2328,7 @@
     tag_id: 70079f5e-4605-4fdb-acaa-2eb8acccdb92
     id: rosie
   - platform: time
-    at: 00:15:00
+    at: 00:02:00
     id: daily reset
   - platform: state
     entity_id:
@@ -2419,6 +2464,15 @@
           target:
             entity_id: input_boolean.humming_bird_syrup
           enabled: false
+      - if:
+        - condition: template
+          value_template: '{{ as_timestamp(now()) - as_timestamp(states.input_boolean.backup_water_fountain.last_changed)
+            > 86400 }}'
+        then:
+        - service: input_boolean.turn_on
+          data: {}
+          target:
+            entity_id: input_boolean.backup_water_fountain
     - conditions:
       - condition: trigger
         id: Tuesday
@@ -2496,7 +2550,7 @@
           entity_id: input_boolean.clean_steps
   mode: single
 - id: '1675972683768'
-  alias: Tag Assistance
+  alias: Tag Assistance (needs help)
   description: call for help when scanned one in each car
   trigger:
   - platform: tag
@@ -2520,11 +2574,40 @@
   alias: Porch Lights
   description: Turn on off porch light
   trigger:
-  - platform: sun
-    event: sunset
-    offset: '-10:00'
-  condition: []
-  action: []
+  - platform: state
+    entity_id:
+    - binary_sensor.porch_door_bell_ding
+    to: 'on'
+  - platform: state
+    entity_id:
+    - lock.porch_door
+    to: unlocked
+  condition:
+  - condition: or
+    conditions:
+    - type: is_illuminance
+      condition: device
+      device_id: 0febc8b3d4ac4b8ddb08bd6b0848ee73
+      entity_id: sensor.breezeway_motion_sensor_illuminance
+      domain: sensor
+      below: 25
+    - condition: sun
+      before: sunrise
+      after: sunset
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.porch_light
+  - delay:
+      hours: 0
+      minutes: 10
+      seconds: 0
+      milliseconds: 0
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.porch_light
   mode: single
 - id: '1676848009583'
   alias: Trash Reminder
@@ -3460,6 +3543,7 @@
     - sensor.mark_watch_s3_esp
     to: basement
     id: mark basement
+    enabled: false
   condition: []
   action:
   - choose:
@@ -4567,8 +4651,13 @@
       - condition: trigger
         id: 'on'
       sequence:
-      - service: script.temp_normal
-        data: {}
+      - if:
+        - condition: state
+          entity_id: input_text.temp_adjust_room
+          state: away
+        then:
+        - service: script.temp_normal
+          data: {}
   mode: single
 - id: '1682694655208'
   alias: Thermostat Adjustment
@@ -5267,10 +5356,27 @@
     - binary_sensor.garage_door_open
     to: 'off'
     id: close
-  condition:
-  - condition: state
-    entity_id: switch.visitors
-    state: 'off'
+  - platform: state
+    entity_id:
+    - lock.porch_door
+    - lock.garage_door
+    to: unavailable
+    id: reboot
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  - platform: state
+    entity_id:
+    - lock.porch_door
+    - lock.garage_door
+    to: unknown
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    id: reboot
+  condition: []
   action:
   - choose:
     - conditions:
@@ -5284,6 +5390,9 @@
     - conditions:
       - condition: trigger
         id: timer
+      - condition: state
+        entity_id: switch.visitors
+        state: 'off'
       sequence:
       - if:
         - condition: state
@@ -5337,6 +5446,32 @@
           data: {}
           target:
             entity_id: timer.door_lock_timer
+    - conditions:
+      - condition: trigger
+        id: reboot
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.white_plug
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 15
+          milliseconds: 0
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.white_plug
+      - delay:
+          hours: 0
+          minutes: 2
+          seconds: 0
+          milliseconds: 0
+      - service: timer.start
+        data: {}
+        target:
+          entity_id: timer.door_lock_timer
   mode: restart
 - id: '1686321016224'
   alias: 'Schedule: Let''''s Encrypt startup'
@@ -5611,9 +5746,9 @@
   trigger:
   - platform: state
     entity_id:
-    - sensor.mark_car_esp
-    from: not_home
-    to: garage
+    - binary_sensor.green_car_home
+    from: 'off'
+    to: 'on'
   condition: []
   action:
   - if:
@@ -5623,10 +5758,15 @@
     then:
     - service: script.green_door
       data: {}
+      enabled: false
+    - service: cover.open_cover
+      data: {}
+      target:
+        entity_id: cover.green_opener
   - delay:
       hours: 0
       minutes: 0
-      seconds: 10
+      seconds: 1
       milliseconds: 0
   - service: lock.unlock
     data: {}
@@ -5637,50 +5777,7 @@
       stop_actions: false
     target:
       entity_id: automation.bluetooth_test
-  mode: single
-- id: '1687628791789'
-  alias: Car Left Garage
-  description: Turn on garage door automation when car leaves
-  trigger:
-  - platform: state
-    entity_id:
-    - sensor.mark_car_esp
-    from: garage
-    to: not_home
-    for:
-      hours: 0
-      minutes: 2
-      seconds: 0
-    id: Green Car
-  - platform: state
-    entity_id:
-    - sensor.holly_car_esp
-    from: garage
-    to: not_home
-    id: blue car
-    for:
-      hours: 0
-      minutes: 2
-      seconds: 0
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: Green Car
-      sequence:
-      - service: automation.turn_on
-        data: {}
-        target:
-          entity_id: automation.bluetooth_test
-    - conditions:
-      - condition: trigger
-        id: blue car
-      sequence:
-      - service: automation.turn_on
-        data: {}
-        target:
-          entity_id: automation.blue_car_home
+    enabled: true
   mode: single
 - id: '1687649121436'
   alias: Car Home Blue
@@ -5690,8 +5787,9 @@
   trigger:
   - platform: state
     entity_id:
-    - sensor.holly_car_esp
-    to: garage
+    - binary_sensor.blue_car_home
+    from: 'off'
+    to: 'on'
   condition: []
   action:
   - if:
@@ -5988,6 +6086,7 @@
       hours: 0
       minutes: 5
       seconds: 0
+    enabled: false
   - platform: state
     entity_id:
     - sensor.mark_watch_s3_esp
@@ -5999,6 +6098,16 @@
       minutes: 5
       seconds: 0
     id: family leave
+  - platform: state
+    entity_id:
+    - binary_sensor.master_bedroom_occupied
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+    id: master leave
   condition:
   - condition: and
     conditions:
@@ -6010,29 +6119,6 @@
     - conditions:
       - condition: trigger
         id: master leave
-      - condition: and
-        conditions:
-        - condition: not
-          conditions:
-          - condition: state
-            entity_id: sensor.mark_phone_esp
-            state: master_bedroom
-          - condition: state
-            entity_id: sensor.holly_phone_esp
-            state: master_bedroom
-          - condition: state
-            entity_id: sensor.mark_watch_s3_esp
-            state: master_bedroom
-        - condition: time
-          before: '17:00:00'
-          weekday:
-          - sat
-          - fri
-          - thu
-          - wed
-          - tue
-          - mon
-          - sun
       sequence:
       - service: light.turn_off
         data: {}
@@ -6064,6 +6150,19 @@
     - conditions:
       - condition: trigger
         id: family leave
+      - condition: and
+        conditions:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: sensor.mark_watch_s3_esp
+            state: family_room
+          - condition: state
+            state: family_room
+            entity_id: sensor.mark_phone_esp
+          - condition: state
+            entity_id: sensor.holly_phone_esp
+            state: family_room
       sequence:
       - service: light.turn_off
         data: {}
@@ -6079,4 +6178,158 @@
         data: {}
         target:
           entity_id: remote.harmony_hub
+  mode: single
+- id: '1688563224419'
+  alias: Door Garage Set Color Left
+  description: 'determine which car has left garage '
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.green_car_home
+    from: 'on'
+    to: 'off'
+    id: green car
+  - platform: state
+    entity_id:
+    - binary_sensor.blue_car_home
+    from: 'on'
+    to: 'off'
+    id: blue car
+  - platform: zone
+    entity_id: person.holly
+    zone: zone.home
+    event: leave
+    id: holly
+  - platform: zone
+    entity_id: person.mark
+    zone: zone.home
+    event: leave
+    id: mark
+  - platform: state
+    entity_id:
+    - sensor.mark_phone_esp
+    to: not_home
+    id: mark
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: green car
+      sequence:
+      - if:
+        - condition: state
+          entity_id: switch.visitors
+          state: 'off'
+        then:
+        - service: input_text.set_value
+          data:
+            value: green
+          target:
+            entity_id: input_text.car_color
+        else:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.bluetooth_test
+      - service: lock.lock
+        data: {}
+        target:
+          entity_id: lock.house_locks
+    - conditions:
+      - condition: trigger
+        id: blue car
+      sequence:
+      - if:
+        - condition: state
+          entity_id: switch.visitors
+          state: 'off'
+        then:
+        - service: input_text.set_value
+          data:
+            value: blue
+          target:
+            entity_id: input_text.car_color
+        else:
+        - service: automation.turn_on
+          data: {}
+          target:
+            entity_id: automation.blue_car_home
+      - service: lock.lock
+        data: {}
+        target:
+          entity_id: lock.house_locks
+    - conditions:
+      - condition: trigger
+        id: holly
+      sequence:
+      - service: script.holly_{{states('input_text.car_color')}}
+        data: {}
+      - service: lock.lock
+        data: {}
+        target:
+          entity_id: lock.house_locks
+      - if:
+        - condition: template
+          value_template: '{{ is_state(''input_text.holly_driving'',''Blue'') and
+            is_state(''binary_sensor.blue_garage_door_sensor_contact'',''on'') }}'
+        then:
+        - service: script.blue_door
+          data: {}
+      - if:
+        - condition: template
+          value_template: '{{ is_state(''input_text.holly_driving'',''Green'') and
+            is_state(''binary_sensor.green_garage_door_sensor_contact'',''on'') }}'
+        then:
+        - service: script.green_door
+          data: {}
+    - conditions:
+      - condition: trigger
+        id: mark
+      sequence:
+      - service: lock.lock
+        data: {}
+        target:
+          entity_id: lock.house_locks
+      - if:
+        - condition: template
+          value_template: '{{ is_state(''input_text.mark_driving'',''Blue'') and is_state(''binary_sensor.blue_garage_door_sensor_contact'',''on'')
+            }}'
+        then:
+        - service: script.blue_door
+          data: {}
+      - if:
+        - condition: template
+          value_template: '{{ is_state(''input_text.mark_driving'',''Green'') and
+            is_state(''cover.green_opener'',''open'') }}'
+        then:
+        - service: cover.close_cover
+          data: {}
+          target:
+            entity_id: cover.green_opener
+      - service: script.mark_{{states('input_text.car_color')}}
+        data: {}
+  mode: single
+- id: '1688757216671'
+  alias: Garage Button Press
+  description: ''
+  trigger:
+  - platform: mqtt
+    topic: cmnd/tasmota_green/POWER
+    payload: 'ON'
+  condition: []
+  action:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - service: mqtt.publish
+    data:
+      topic: cmnd/tasmota_green/POWER
+      payload: 'OFF'
   mode: single

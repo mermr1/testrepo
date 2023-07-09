@@ -102,6 +102,20 @@
   timeout: 10
   away_timeout: 10
 
+#- platform: mqtt_room
+#  device_id: "irk:e4e91642a9553bbc8ff1d283138edcf0"
+#  name: 'iPhone Home esp'
+#  state_topic: 'espresense/devices/irk:e4e91642a9553bbc8ff1d283138edcf0'
+#  timeout: 10
+#  away_timeout: 10
+
+#- platform: mqtt_room
+#  device_id: "irk:93dc8888d43a727650c5185b6c25505b"
+#  name: 'Mark iPad esp'
+#  state_topic: 'espresense/devices/irk:93dc8888d43a727650c5185b6c25505b'
+#  timeout: 10
+#  away_timeout: 10
+
 
 # sensor check for office lights turning on mid automation/for override
 #- platform: history_stats

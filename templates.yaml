@@ -666,3 +666,14 @@
           {%- endif %}
         {%- endfor %}
         {{ ns.occupancy }}
+
+    - name: Office Room Count
+      unique_id: e2e20968-fe8f-47d4-84db-d5cb6a8caf22
+      state: >-
+        {% set ns = namespace(occupancy=0) %}
+        {%- for sensor in states.sensor %}
+          {%- if 'distance' in sensor.attributes and sensor.state == 'office' %}
+            {%- set ns.occupancy = ns.occupancy + 1 %}
+          {%- endif %}
+        {%- endfor %}
+        {{ ns.occupancy }}

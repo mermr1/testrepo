@@ -26,6 +26,12 @@
         {% endif %}
       value_template: "{{ is_state('person.mark','home') or is_state('person.holly','home') or is_state('switch.visitors','on') }}"
 
+######################################
+### list of room occupancy sensors ###
+######################################
+###         by Mark Ross           ###
+###         July 3, 2023           ###
+######################################
 
 - platform: template
   sensors:
@@ -41,7 +47,10 @@
       value_template: >-
         {{ is_state('sensor.mark_watch_s3_esp', 'master_bedroom') or 
            is_state('sensor.mark_phone_esp', 'master_bedroom') or
-           is_state('sensor.holly_phone_esp', 'master_bedroom') }}
+           is_state('sensor.holly_phone_esp', 'master_bedroom') or
+           is_state('binary_sensor.withings_in_bed_mark', 'on') or
+           is_state('binary_sensor.withings_in_bed_holly','on') }}
+      delay_off: 0:00:15
 
 - platform: template
   sensors:
@@ -71,105 +80,177 @@
           mdi:alpha-b-box-outline
         {% endif %}
       value_template: >-
-        {{ is_state('sensor.mark_watch_s3_esp', 'basement') or 
-           is_state('sensor.mark_phone_esp', 'basement') or
-           is_state('sensor.holly_phone_esp', 'basement') }}
+        {{ is_state('sensor.mark_watch_s3_esp', 'office') or 
+           is_state('sensor.mark_phone_esp', 'office') or
+           is_state('sensor.holly_phone_esp', 'office') }}
 
 - platform: template
   sensors:
-    kitchen_occupied:
-      friendly_name: Kitchen Occupied
-      unique_id: f733f7e1-e619-4b1a-ac4c-97a07399c0e9
+    mark_in_office:
+      friendly_name: Mark In Office
+      unique_id: 59f367d2-770d-415b-9ff4-30941ebab89f
       icon_template: >-
-        {% if is_state('binary_sensor.kitchen_occupied', 'on') %}
-          mdi:alpha-k-box
+        {% if is_state('binary_sensor.mark_in_office', 'on') %}
+          mdi:alpha-m-circle
         {% else %}
-          mdi:alpha-k-box-outline
+          mdi:alpha-m-circle-outline
         {% endif %}
       value_template: >-
-        {{ is_state('sensor.mark_watch_s3_esp', 'kitchen') or 
-           is_state('sensor.mark_phone_esp', 'kitchen') or
-           is_state('sensor.holly_phone_esp', 'kitchen') }}
+        {{ is_state('sensor.mark_watch_s3_esp', 'office') or 
+           is_state('sensor.mark_phone_esp', 'office') }}
+
+#- platform: template
+#  sensors:
+#    kitchen_occupied:
+#      friendly_name: Kitchen Occupied
+#      unique_id: f733f7e1-e619-4b1a-ac4c-97a07399c0e9
+#      icon_template: >-
+#        {% if is_state('binary_sensor.kitchen_occupied', 'on') %}
+#          mdi:alpha-k-box
+#        {% else %}
+#          mdi:alpha-k-box-outline
+#        {% endif %}
+#      value_template: >-
+#        {{ is_state('sensor.mark_watch_s3_esp', 'kitchen') or 
+#           is_state('sensor.mark_phone_esp', 'kitchen') or
+#           is_state('sensor.holly_phone_esp', 'kitchen') }}
            
-- platform: template
-  sensors:
-    living_room_occupied:
-      friendly_name: Living Room Occupied
-      unique_id: 8065a051-dfa6-4d4a-9129-3369e4891c36
-      icon_template: >-
-        {% if is_state('binary_sensor.living_room_occupied', 'on') %}
-          mdi:alpha-l-box
-        {% else %}
-          mdi:alpha-l-box-outline
-        {% endif %}
-      value_template: >-
-        {{ is_state('sensor.mark_watch_s3_esp', 'living_room') or 
-           is_state('sensor.mark_phone_esp', 'living_room') or
-           is_state('sensor.holly_phone_esp', 'living_room') }}
+#- platform: template
+#  sensors:
+#    living_room_occupied:
+#      friendly_name: Living Room Occupied
+#      unique_id: 8065a051-dfa6-4d4a-9129-3369e4891c36
+#      icon_template: >-
+#        {% if is_state('binary_sensor.living_room_occupied', 'on') %}
+#          mdi:alpha-l-box
+#        {% else %}
+#          mdi:alpha-l-box-outline
+#        {% endif %}
+#      value_template: >-
+#        {{ is_state('sensor.mark_watch_s3_esp', 'living_room') or 
+#           is_state('sensor.mark_phone_esp', 'living_room') or
+#           is_state('sensor.holly_phone_esp', 'living_room') }}
 
-- platform: template
-  sensors:
-    garage_occupied:
-      friendly_name: Garage Occupied
-      unique_id: 4bf4ee53-0760-4a59-9d25-8f6c96c39608
-      icon_template: >-
-        {% if is_state('binary_sensor.garage_occupied', 'on') %}
-          mdi:alpha-g-box
-        {% else %}
-          mdi:alpha-g-box-outline
-        {% endif %}
-      value_template: >-
-        {{ is_state('sensor.mark_watch_s3_esp', 'garage') or 
-           is_state('sensor.mark_phone_esp', 'garage') or
-           is_state('sensor.holly_phone_esp', 'garage') }}
+#- platform: template
+#  sensors:
+#    garage_occupied:
+#      friendly_name: Garage Occupied
+#      unique_id: 4bf4ee53-0760-4a59-9d25-8f6c96c39608
+#      icon_template: >-
+#        {% if is_state('binary_sensor.garage_occupied', 'on') %}
+#          mdi:alpha-g-box
+#        {% else %}
+#          mdi:alpha-g-box-outline
+#        {% endif %}
+#      value_template: >-
+#        {{ is_state('sensor.mark_watch_s3_esp', 'garage') or 
+#           is_state('sensor.mark_phone_esp', 'garage') or
+#           is_state('sensor.holly_phone_esp', 'garage') }}
 
-- platform: template
-  sensors:
-    guest_bedroom_occupied:
-      friendly_name: Guest Bedroom Occupied
-      unique_id: 389f5978-d10d-491c-8908-b2f29084834a
-      icon_template: >-
-        {% if is_state('binary_sensor.guest_bedroom_occupied', 'on') %}
-          mdi:alpha-s-box
-        {% else %}
-          mdi:alpha-s-box-outline
-        {% endif %}
-      value_template: >-
-        {{ is_state('sensor.mark_watch_s3_esp', 'guest_room') or 
-           is_state('sensor.mark_phone_esp', 'guest_room') or
-           is_state('sensor.holly_phone_esp', 'guest_room') }}
+#- platform: template
+#  sensors:
+#    guest_bedroom_occupied:
+#      friendly_name: Guest Bedroom Occupied
+#      unique_id: 389f5978-d10d-491c-8908-b2f29084834a
+#      icon_template: >-
+#        {% if is_state('binary_sensor.guest_bedroom_occupied', 'on') %}
+#          mdi:alpha-s-box
+#        {% else %}
+#          mdi:alpha-s-box-outline
+#        {% endif %}
+#      value_template: >-
+#        {{ is_state('sensor.mark_watch_s3_esp', 'guest_room') or 
+#           is_state('sensor.mark_phone_esp', 'guest_room') or
+#           is_state('sensor.holly_phone_esp', 'guest_room') }}
 
-- platform: template
-  sensors:
-    master_suite_occupied:
-      friendly_name: Master Suite Occupied
-      unique_id: e8a13f6f-ce17-45df-8242-248c583077bf
-      icon_template: >-
-        {% if is_state('binary_sensor.master_bedroom_occupied', 'on') %}
-          mdi:alpha-m-box
-        {% else %}
-          mdi:alpha-m-box-outline
-        {% endif %}
-      value_template: >-
-        {{ is_state('sensor.mark_watch_s3_esp', 'master_suite') or 
-           is_state('sensor.mark_phone_esp', 'master_suite') or
-           is_state('sensor.holly_phone_esp', 'master_suite') }}
+#- platform: template
+#  sensors:
+#    master_suite_occupied:
+#      friendly_name: Master Suite Occupied
+#      unique_id: e8a13f6f-ce17-45df-8242-248c583077bf
+#      icon_template: >-
+#        {% if is_state('binary_sensor.master_bedroom_occupied', 'on') %}
+#          mdi:alpha-m-box
+#        {% else %}
+#          mdi:alpha-m-box-outline
+#        {% endif %}
+#      value_template: >-
+#        {{ is_state('sensor.mark_watch_s3_esp', 'master_suite') or 
+#           is_state('sensor.mark_phone_esp', 'master_suite') or
+#           is_state('sensor.holly_phone_esp', 'master_suite') }}
 
+#- platform: template
+#  sensors:
+#    office_occupied:
+#      friendly_name: Office Occupied
+#      unique_id: 2cf316c4-bced-42fe-ad64-bf368f19523a
+#      icon_template: >-
+#        {% if is_state('binary_sensor.office_occupied', 'on') %}
+#          mdi:alpha-o-box
+#        {% else %}
+#          mdi:alpha-o-box-outline
+#        {% endif %}
+#      value_template: >-
+#        {{ is_state('sensor.mark_watch_s3_esp', 'office') or 
+#           is_state('sensor.mark_phone_esp', 'office') or
+#           is_state('sensor.holly_phone_esp', 'office') }}
 
-- platform: ping
-  host: 192.168.68.103
-  name: "breezewayRA"
-  count: 4
-  scan_interval: 300
+##################
+## ping sensors ##
+##################
 
-- platform: ping
-  host: 192.168.68.111
-  name: "LivingroomRA"
-  count: 4
-  scan_interval: 300
+#######################
+#- platform: ping
+#  host: 192.168.68.103
+#  name: "breezewayRA"
+#  count: 4
+#  scan_interval: 300
+
+#- platform: ping
+#  host: 192.168.68.111
+#  name: "LivingroomRA"
+#  count: 4
+#  scan_interval: 300
+#######################
 
 - platform: ping
   host: 192.168.68.108
   name: "Mark Ping"
   count: 4
   scan_interval: 600
+
+####################
+### car sensors  ###
+####################
+### July 3, 2023 ###
+####################
+
+- platform: template
+  sensors:
+    blue_car_home:
+      friendly_name: Blue Car Home
+      unique_id: 3b2f1a6e-4ed6-4751-aa7e-f6a17802c5bf
+      icon_template: >-
+        {% if is_state('binary_sensor.blue_car_home', 'on') %}
+          mdi:car
+        {% else %}
+          mdi:car-off
+        {% endif %}
+      value_template: >-
+        {{ not is_state('sensor.holly_car_esp', 'not_home') }}
+#      delay_off: 0:01:00
+
+- platform: template
+  sensors:
+    green_car_home:
+      friendly_name: Green Car Home
+      unique_id: 75c306e5-d58c-4ca7-9dde-af37bca53a33
+      icon_template: >-
+        {% if is_state('binary_sensor.green_car_home', 'on') %}
+          mdi:car
+        {% else %}
+          mdi:car-off
+        {% endif %}
+      value_template: >-
+        {{ not is_state('sensor.mark_car_esp', 'not_home') }}
+      delay_off: 0:01:00

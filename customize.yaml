@@ -26,3 +26,12 @@ sensor.holly_car_esp:
 
 sensor.mark_car_esp:
   icon: mdi:car
+
+cover.green_opener:
+  device_class: garage
+  icon_template: >-
+    {% if is_state('cover.green_opener', 'closed') %}
+      mdi:garage
+    {% else %}
+      mdi:garage-open
+    {% endif %}
