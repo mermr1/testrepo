@@ -47,36 +47,13 @@
           - switch.wall_right_plug
           - switch.basement_desk_lamp
           - switch.basement_sink_switch
+          - switch.basement_counter_plug
       - service: light.turn_on
         data:
           brightness_pct: 75
         target:
           entity_id:
           - light.basement_corner_light
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 15
-          milliseconds: 0
-      - if:
-        - condition: state
-          entity_id: binary_sensor.mark_in_office
-          state: 'on'
-        then:
-        - service: switch.turn_on
-          data: {}
-          target:
-            entity_id: switch.dell_tower
-        - type: turn_on
-          device_id: fff1787a9e7a855b257b1b8cece4c160
-          entity_id: remote.32_tcl_roku_tv
-          domain: remote
-        else:
-        - service: notify.alexa_media_basement_echo
-          data:
-            message: Remember to turn off the lights when you leave!
-            data:
-              type: tts
     - conditions:
       - condition: trigger
         id: light off
@@ -525,6 +502,7 @@
       minutes: 0
       seconds: 30
     id: basement coffee
+    enabled: false
   - platform: event
     event_type: alexa_actionable_notification
     event_data:
@@ -581,6 +559,39 @@
       minutes: 0
       seconds: 2
     id: basement bypass
+  - platform: state
+    entity_id:
+    - sensor.mark_phone_esp
+    - sensor.mark_watch_s3_esp
+    to: office
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 15
+    id: basement coffee
+    enabled: false
+  - platform: state
+    entity_id:
+    - sensor.mark_phone_esp
+    - sensor.mark_watch_s3_esp
+    to: basement
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 15
+    id: basement coffee
+    enabled: false
+  - platform: state
+    entity_id:
+    - binary_sensor.basement_occupied
+    - binary_sensor.office_occupied
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+    id: basement coffee
+    from: 'off'
   condition: []
   action:
   - choose:
@@ -714,85 +725,6 @@
           entity_id: light.basement
     - conditions:
       - condition: trigger
-        id: basement coffee
-        enabled: true
-      sequence:
-      - if:
-        - condition: template
-          value_template: '{{ now().weekday() == 0 }}'
-        then:
-        - if:
-          - condition: and
-            conditions:
-            - condition: state
-              entity_id: input_boolean.basement_coffee_ready
-              state: 'on'
-            - condition: state
-              entity_id: binary_sensor.mark_in_office
-              state: 'on'
-          then:
-          - service: script.activate_alexa_actionable_notification
-            data:
-              text: Today is Monday; replace batteries in keyboard and mouse, also,
-                would you like me to start the coffee pot?
-              event_id: basement_coffee_event
-              alexa_device: media_player.basement_echo
-          else:
-          - service: notify.alexa_media
-            data:
-              message: If you want coffee, you will need to brew it yourself! Remember
-                to replace rechargeable batteries.
-              target:
-              - media_player.basement_echo
-              data:
-                type: tts
-        else:
-        - if:
-          - condition: and
-            conditions:
-            - condition: state
-              state: 'on'
-              entity_id: input_boolean.basement_coffee_ready
-            - condition: state
-              entity_id: binary_sensor.basement_motion_sensor_occupancy
-              state: 'on'
-            - condition: state
-              entity_id: sensor.mark_watch_s3_esp
-              state: basement
-          then:
-          - service: script.activate_alexa_actionable_notification
-            data:
-              text: Would you like me to start the coffee pot?
-              event_id: basement_coffee_event
-              alexa_device: media_player.basement_echo
-          else:
-          - if:
-            - condition: or
-              conditions:
-              - condition: state
-                entity_id: sensor.mark_watch_s3_esp
-                state: basement
-              - condition: state
-                entity_id: sensor.mark_phone_esp
-                state: basement
-            then:
-            - service: notify.alexa_media
-              data:
-                message: You will need to brew coffee yourself!
-                target:
-                - media_player.basement_echo
-                data:
-                  type: tts
-            else:
-            - service: notify.alexa_media
-              data:
-                message: Holly, turn off the light when you leave!
-                target:
-                - media_player.basement_echo
-                data:
-                  type: tts
-    - conditions:
-      - condition: trigger
         id: basement bypass
       sequence:
       - service: script.basement_coffee_yes
@@ -803,6 +735,53 @@
             last drop!
           data:
             type: tts
+    - conditions:
+      - condition: trigger
+        id:
+        - basement coffee
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: sensor.mark_phone_esp
+          state: basement
+        - condition: state
+          entity_id: sensor.mark_watch_s3_esp
+          state: basement
+        - condition: state
+          entity_id: sensor.mark_phone_esp
+          state: office
+        - condition: state
+          entity_id: sensor.mark_watch_s3_esp
+          state: office
+      sequence:
+      - if:
+        - condition: and
+          conditions:
+          - condition: state
+            entity_id: input_boolean.basement_coffee_ready
+            state: 'on'
+          - condition: state
+            entity_id: switch.basement_coffee_plug
+            state: 'off'
+        then:
+        - service: script.activate_alexa_actionable_notification
+          data:
+            text: Would you like me to start the coffee pot?
+            event_id: basement_coffee_event
+            alexa_device: media_player.basement_echo
+        else:
+        - if:
+          - condition: state
+            entity_id: switch.basement_coffee_plug
+            state: 'off'
+          then:
+          - service: notify.alexa_media
+            data:
+              message: You will need to brew coffee yourself!
+              target:
+              - media_player.basement_echo
+              data:
+                type: tts
   mode: single
 - id: '1674863381231'
   alias: Medication
@@ -1737,16 +1716,19 @@
             data: {}
             target:
               entity_id: cover.green_opener
+        enabled: false
       - delay:
           hours: 0
-          minutes: 1
+          minutes: 10
           seconds: 0
           milliseconds: 0
+        enabled: false
       - service: automation.turn_off
         data:
           stop_actions: true
         target:
           entity_id: automation.mark_zone
+        enabled: false
     - conditions:
       - condition: trigger
         id: leave
@@ -1764,6 +1746,7 @@
           data: {}
           target:
             entity_id: cover.green_opener
+        enabled: false
       - if:
         - condition: state
           entity_id: binary_sensor.blue_garage_door_sensor_contact
@@ -1771,6 +1754,7 @@
         then:
         - service: script.blue_door
           data: {}
+        enabled: false
   mode: single
 - id: '1675278357388'
   alias: Low Battery Level Check
@@ -4438,175 +4422,6 @@
     target:
       entity_id: light.garage
   mode: single
-- id: '1682538436860'
-  alias: Outside Work
-  description: lock and unlock door according to garage doors while working outside
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.green_garage_door_sensor_contact
-    - binary_sensor.blue_garage_door_sensor_contact
-    to: 'on'
-    id: open
-  - platform: state
-    entity_id:
-    - binary_sensor.green_garage_door_sensor_contact
-    - binary_sensor.blue_garage_door_sensor_contact
-    to: 'off'
-    id: closed
-  - platform: device
-    device_id: b270b50d5f6f44f6258044a29618be00
-    domain: lock
-    entity_id: lock.garage_door
-    type: locked
-    id: lock
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: open
-      sequence:
-      - if:
-        - condition: or
-          conditions:
-          - condition: state
-            entity_id: binary_sensor.green_garage_door_sensor_contact
-            state: 'on'
-          - condition: state
-            entity_id: binary_sensor.blue_garage_door_sensor_contact
-            state: 'on'
-        then:
-        - service: lock.unlock
-          data: {}
-          target:
-            entity_id: lock.garage_door
-    - conditions:
-      - condition: trigger
-        id: closed
-      sequence:
-      - if:
-        - condition: and
-          conditions:
-          - condition: state
-            entity_id: binary_sensor.green_garage_door_sensor_contact
-            state: 'off'
-          - condition: state
-            entity_id: binary_sensor.blue_garage_door_sensor_contact
-            state: 'off'
-        then:
-        - service: lock.lock
-          data: {}
-          target:
-            entity_id: lock.garage_door
-    - conditions:
-      - condition: trigger
-        id: lock
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 10
-          milliseconds: 0
-      - service: lock.unlock
-        data: {}
-        target:
-          entity_id: lock.garage_door
-  mode: single
-- id: '1682538678007'
-  alias: 'Outside Work ON/OFF '
-  description: turn outside work automation on and off with alexa command
-  trigger:
-  - platform: state
-    entity_id:
-    - input_boolean.outside_work
-    id: work
-  - type: not_opened
-    platform: device
-    device_id: b270b50d5f6f44f6258044a29618be00
-    entity_id: binary_sensor.garage_door_open
-    domain: binary_sensor
-    id: lock
-    enabled: false
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: work
-      sequence:
-      - if:
-        - condition: state
-          entity_id: input_boolean.outside_work
-          state: 'on'
-        then:
-        - service: lock.unlock
-          data: {}
-          target:
-            entity_id: lock.garage_door
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 0
-            milliseconds: 300
-        - service: script.blue_door
-          data: {}
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 0
-            milliseconds: 300
-        - service: automation.turn_on
-          data: {}
-          target:
-            entity_id: automation.outside_work
-        else:
-        - service: automation.turn_off
-          data:
-            stop_actions: false
-          target:
-            entity_id: automation.outside_work
-        - if:
-          - condition: state
-            entity_id: binary_sensor.green_garage_door_sensor_contact
-            state: 'on'
-          then:
-          - service: script.green_door
-            data: {}
-        - if:
-          - condition: state
-            entity_id: binary_sensor.blue_garage_door_sensor_contact
-            state: 'on'
-          then:
-          - service: script.blue_door
-            data: {}
-        - service: lock.unlock
-          data: {}
-          target:
-            entity_id: lock.garage_door
-        - delay:
-            hours: 0
-            minutes: 5
-            seconds: 0
-            milliseconds: 0
-        - service: lock.lock
-          data: {}
-          target:
-            entity_id: lock.house_locks
-    - conditions:
-      - condition: trigger
-        id: lock
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 15
-          milliseconds: 0
-      - service: lock.lock
-        data: {}
-        target:
-          entity_id: lock.garage_door
-  mode: single
 - id: '1682616369321'
   alias: Home Occupied
   description: ''
@@ -5822,10 +5637,6 @@
     entity_id: person.holly
     zone: zone.home
     event: leave
-  - platform: zone
-    entity_id: person.mark
-    zone: zone.home
-    event: leave
   condition: []
   action:
   - if:
@@ -6189,12 +6000,20 @@
     from: 'on'
     to: 'off'
     id: green car
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
   - platform: state
     entity_id:
     - binary_sensor.blue_car_home
     from: 'on'
     to: 'off'
     id: blue car
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
   - platform: zone
     entity_id: person.holly
     zone: zone.home
@@ -6332,4 +6151,56 @@
     data:
       topic: cmnd/tasmota_green/POWER
       payload: 'OFF'
+  mode: single
+- id: '1689359924164'
+  alias: Car Presence Mark
+  description: ''
+  use_blueprint:
+    path: aderusha/MQTT_Tasmota_CarPresence.yaml
+    input:
+      garage_door: cover.green_opener
+      car_presence: switch.rav4
+- id: '1689463150506'
+  alias: Deadbolt Reset
+  description: Reset deadbolts when go offline
+  trigger:
+  - platform: state
+    entity_id:
+    - lock.porch_door
+    - lock.garage_door
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+  - platform: state
+    entity_id:
+    - lock.porch_door
+    - lock.garage_door
+    to: unknown
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.white_plug
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.white_plug
+  mode: single
+- id: '1689463206747'
+  description: ''
+  trigger: []
+  condition: []
+  action: []
   mode: single

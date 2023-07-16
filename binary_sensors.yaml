@@ -82,7 +82,11 @@
       value_template: >-
         {{ is_state('sensor.mark_watch_s3_esp', 'office') or 
            is_state('sensor.mark_phone_esp', 'office') or
-           is_state('sensor.holly_phone_esp', 'office') }}
+           is_state('sensor.holly_phone_esp', 'office') or
+           is_state('sensor.mark_watch_s3_esp', 'basement') or
+           is_state('sensor.mark_phone_esp', 'basaement') or
+           is_state('sensor.holly_phone_esp', 'basement') }}
+      delay_off: 0:01:00
 
 - platform: template
   sensors:

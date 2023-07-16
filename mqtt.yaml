@@ -38,15 +38,3 @@ binary_sensor:
     payload_on: online
     payload_off: offline
     device_class: connectivity
-
-cover:
-  - unique_id: 062ef987-1bd0-4f7f-9b8f-a05d310c01ae
-    name: "Green Opener"
-    state_topic: "cmnd/garagestate/POWER2"
-    command_topic: "cmnd/tasmota_green/POWER"
-    payload_open: "ON"
-    payload_close: "ON"
-    payload_stop: "ON"
-    state_open: "OFF"
-    state_closed: "ON"
-    optimistic: false

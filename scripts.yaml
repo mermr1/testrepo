@@ -560,25 +560,6 @@ roku_power:
     target:
       entity_id: remote.32_tcl_roku_tv
   mode: single
-green_door:
-  alias: Green Door
-  sequence:
-  - if:
-    - condition: state
-      entity_id: cover.green_opener
-      state: closed
-    then:
-    - service: cover.open_cover
-      data: {}
-      target:
-        entity_id: cover.green_opener
-    else:
-    - service: cover.close_cover
-      data: {}
-      target:
-        entity_id: cover.green_opener
-  mode: single
-  icon: mdi:garage-alert-variant
 blue_door:
   alias: Blue Door
   sequence:
